@@ -221,6 +221,7 @@ function processDeathCheck(state: BattleState): BattleState {
           s = addLog(s, `${char.name}が戦闘不能になった`);
           s = triggerPassives(s, 'on_ally_death', { dyingCharId: char.id });
           s = triggerPassives(s, 'on_enemy_death', { dyingCharId: char.id });
+          s = triggerPassives(s, 'on_nemesis_death_by_ally', { dyingCharId: char.id });
         }
       }
     }
@@ -740,8 +741,8 @@ export function processAction(
               s = triggerPassives(s, 'on_hp_threshold', { targetCharId: char.id, damage: dmgDealt });
             }
             
-            // on_ally_skill_damageトリガーを発火（攻撃側と同じチームのキャラがダメージを受けた場合）
-            if (team === actorTeam) {
+            // on_ally_skill_damageトリガーを発火（攻撃側と異なるチームのキャラがダメージを受けた場合）
+            if (team !== actorTeam) {
               s = triggerPassives(s, 'on_ally_skill_damage', { targetCharId: char.id, damage: dmgDealt });
             }
           }
