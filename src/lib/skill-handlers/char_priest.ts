@@ -228,7 +228,7 @@ const s4_god: SkillHandler = (state, actorTeam) => {
     name: "神父",
     element: "light" as const,
     maxHp: 800,
-    hp: Math.floor(800 * 0.5),
+    hp: Math.floor(800 * 0.4),
     atk: 102,
     unlockedDerivedSkills: c.unlockedDerivedSkills.filter(u => 
       u.skillId !== 'char_priest_s2_god_punishment' &&
@@ -245,6 +245,7 @@ const s4_god: SkillHandler = (state, actorTeam) => {
       is_god_mode: false,
       immune_to_effects: false,
       is_god_used: true, // Re-ascension prevented
+      is_returned_from_god: true,
     }
   }));
   
@@ -271,7 +272,7 @@ const s4_dispatch: SkillHandler = (state, actorTeam) => {
 const passive_protection: PassiveHandler = (state, ownerTeam, ownerCharId) => {
   const char = state[ownerTeam].characters.find(c => c.id === ownerCharId);
   if (!char || !char.isActive || state.currentTurn !== ownerTeam) return state;
-  if (char.battleFlags.is_god_mode) return state;
+  if (char.battleFlags.is_god_mode || char.battleFlags.is_returned_from_god) return state;
 
   const healAmount = Math.floor(char.maxHp * 0.05);
   const s = updateChar(state, ownerTeam, ownerCharId, (c) => ({
@@ -285,12 +286,13 @@ const passive_protection: PassiveHandler = (state, ownerTeam, ownerCharId) => {
 const passive_always: PassiveHandler = (state, ownerTeam, ownerCharId) => {
   return updateChar(state, ownerTeam, ownerCharId, (c) => {
     const isGod = c.battleFlags.is_god_mode;
+    const isReturned = c.battleFlags.is_returned_from_god;
     const sin = getResource(c, 'sin');
     return {
       ...c,
       battleFlags: {
         ...c.battleFlags,
-        damage_reduction_fixed: isGod ? 0 : 20,
+        damage_reduction_fixed: (isGod || isReturned) ? 0 : 20,
         damage_addition_fixed: Math.floor(sin / 10)
       }
     };
