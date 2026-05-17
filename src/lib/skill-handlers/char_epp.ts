@@ -285,7 +285,7 @@ const s5: SkillHandler = (state, actorTeam) => {
   }
 
   const multiplier = assault * 0.4;
-  const dmg = calcDamage(actor, enemy, { multiplier, piercing: true });
+  const dmg = calcDamage(actor, enemy, { multiplier, defIgnore: 0.3 });
 
   let s = dealDamage(state, actorTeam, dmg);
   s = updateActiveChar(s, actorTeam, (c) => setResource(c, 'assault_platoon', 0, true));
@@ -331,13 +331,13 @@ const s1d1: SkillHandler = (state, actorTeam) => {
   const assault = getResource(actor, 'assault_platoon');
 
   let multiplier: number;
-  let piercing = false;
+  let defIgnore = 0;
 
   if (suppression > 0) {
     multiplier = 0.17;
   } else if (assault > 0) {
     multiplier = 0.25;
-    piercing = true;
+    defIgnore = 0.2;
   } else {
     return state; // 小隊なし
   }
@@ -356,7 +356,7 @@ const s1d1: SkillHandler = (state, actorTeam) => {
   for (let i = 0; i < 1 + reuseCount; i++) {
     const currentActor = getActive(s, actorTeam);
     const currentEnemy = getActive(s, actorTeam === 'team1' ? 'team2' : 'team1');
-    const hitDmg = calcDamage(currentActor, currentEnemy, { multiplier, piercing });
+    const hitDmg = calcDamage(currentActor, currentEnemy, { multiplier, defIgnore });
     totalDmg += hitDmg;
     s = dealDamage(s, actorTeam, hitDmg);
 

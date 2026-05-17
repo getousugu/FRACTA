@@ -364,7 +364,7 @@ const pyro_s4_d1: SkillHandler = (state, actorTeam) => {
   const baseBurn = 40 + Math.floor(consumedHeat / 2);
   
   // ATK×1.5のダメージ、DEF30%無視
-  const dmg = calcDamage(actor, enemy, { multiplier: 1.5, piercing: true });
+  const dmg = calcDamage(actor, enemy, { multiplier: 1.5, defIgnore: 0.3 });
   
   let s = dealDamage(state, actorTeam, dmg);
   const enemyTeam = actorTeam === 'team1' ? 'team2' : 'team1';

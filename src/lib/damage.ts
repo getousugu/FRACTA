@@ -47,6 +47,8 @@ export type DamageOptions = {
   extraMultiplier?: number;
   /** 固定ダメージ加算（スキル固有） */
   fixedDamage?: number;
+  /** 防御無視率 (例: 0.3 = DEFの30%を無視) */
+  defIgnore?: number;
 };
 
 export function calcDamage(
@@ -59,10 +61,11 @@ export function calcDamage(
     applyElement = true,
     piercing = false,
     extraMultiplier = 1,
+    defIgnore = 0,
   } = options;
 
   const atk = getEffectiveStat(attacker, 'atk');
-  const def = piercing ? 0 : getEffectiveStat(defender, 'def');
+  const def = piercing ? 0 : getEffectiveStat(defender, 'def') * (1 - defIgnore);
 
   const elementMult = applyElement
     ? getElementMultiplier(attacker.element, defender.element)
@@ -150,7 +153,7 @@ export function calcDoTDamage(
   }
 
   // metadata等で貫通フラグを持つ想定（現状は簡略化）
-  const isPiercing = effect.id === 'poison_pierce';
+  const isPiercing = effect.id === 'poison_pierce' || effect.id === 'epp_d2_dot';
   if (isPiercing) return Math.max(1, effect.value);
   const def = getEffectiveStat(defender, 'def');
   return Math.max(1, Math.round(effect.value - def / 4));
