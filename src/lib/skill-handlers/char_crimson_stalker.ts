@@ -142,13 +142,20 @@ function dealDamageToAll(
 
 // 宿敵マークの対象を取得
 function getNemesisTargetId(char: CharacterState): string | null {
-  const targetId = getResource(char, 'nemesis_mark_target');
-  return targetId > 0 ? String(targetId) : null;
+  return (char.battleFlags.nemesis_mark_target as string) || null;
 }
 
 // 宿敵マークの対象を設定
 function setNemesisTarget(char: CharacterState, targetId: string): CharacterState {
-  return setResource(char, 'nemesis_mark_target', parseInt(targetId), true);
+  // customResources の数値を1にする（UI表示用など。0より大きければ何でも良い）
+  const charWithResource = setResource(char, 'nemesis_mark_target', 1, true);
+  return {
+    ...charWithResource,
+    battleFlags: {
+      ...charWithResource.battleFlags,
+      nemesis_mark_target: targetId,
+    },
+  };
 }
 
 // 狂乱状態かどうか
