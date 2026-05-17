@@ -312,7 +312,8 @@ function applyRoleEffects(
             value: -0.05,
             mode: 'mul',
             isStackable: false,
-            turnsRemaining: 1
+            turnsRemaining: 1,
+            currentStacks: 1
           })
         );
         s = updateActiveChar(s, enemyTeam, (c) =>
@@ -324,7 +325,8 @@ function applyRoleEffects(
             value: -0.05,
             mode: 'mul',
             isStackable: false,
-            turnsRemaining: 1
+            turnsRemaining: 1,
+            currentStacks: 1
           })
         );
         s = addLog(s, `ワンペア青の効果 → ${enemy.name}のATK・DEF5%低下（1ターン）`);
@@ -345,7 +347,8 @@ function applyRoleEffects(
             value: 0.10,
             mode: 'mul',
             isStackable: false,
-            turnsRemaining: 2
+            turnsRemaining: 2,
+            currentStacks: 1
           })
         );
         s = updateActiveChar(s, actorTeam, (c) =>
@@ -357,7 +360,8 @@ function applyRoleEffects(
             value: 0.10,
             mode: 'mul',
             isStackable: false,
-            turnsRemaining: 2
+            turnsRemaining: 2,
+            currentStacks: 1
           })
         );
         totalHeal += Math.floor(actor.maxHp * 0.10);
@@ -381,7 +385,8 @@ function applyRoleEffects(
             value: -0.10,
             mode: 'mul',
             isStackable: false,
-            turnsRemaining: 2
+            turnsRemaining: 2,
+            currentStacks: 1
           })
         );
         s = updateActiveChar(s, enemyTeam, (c) =>
@@ -393,7 +398,8 @@ function applyRoleEffects(
             value: -0.10,
             mode: 'mul',
             isStackable: false,
-            turnsRemaining: 2
+            turnsRemaining: 2,
+            currentStacks: 1
           })
         );
         s = addLog(s, `フラッシュ青の効果 → ${enemy.name}のATK・DEF10%低下（2ターン）`);
@@ -514,7 +520,7 @@ function discardAndDraw(char: CharacterState, color: number): CharacterState {
   const newNum = Math.floor(Math.random() * 5) + 1;
   cards.push({ num: newNum, color });
 
-  const nextChar = {
+  let nextChar = {
     ...char,
     battleFlags: {
       ...char.battleFlags,
@@ -626,7 +632,8 @@ const deal_s4_bluff: SkillHandler = (state, actorTeam) => {
       value: 0.05,
       mode: 'mul',
       isStackable: false,
-      turnsRemaining: 2
+      turnsRemaining: 2,
+      currentStacks: 1
     })
   );
 
@@ -671,7 +678,23 @@ const deal_s6_cheating: SkillHandler = (state, actorTeam) => {
     return s;
   }
 
-  const role = 'ストレート';
+  const rand = Math.random() * 100;
+  let role = 'ブタ';
+  if (rand < 40) {
+    role = 'ワンペア';
+  } else if (rand < 65) {
+    role = 'レインボー';
+  } else if (rand < 80) {
+    role = 'フラッシュ';
+  } else if (rand < 90) {
+    role = 'ストレート';
+  } else if (rand < 97) {
+    role = 'スリーカード';
+  } else if (rand < 99) {
+    role = 'ストレートフラッシュ';
+  } else {
+    role = 'ブタ';
+  }
 
   s = updateActiveChar(s, actorTeam, (c) => {
     const cards = generateHandForRole(role);
@@ -726,7 +749,7 @@ const deal_passive_turn_start: PassiveHandler = (state, ownerTeam, ownerCharId) 
       }
     };
 
-    const temp = setResource(nextChar, 'redraw_count', nextRedraw, true);
+    let temp = setResource(nextChar, 'redraw_count', nextRedraw, true);
     return syncHandCards(temp);
   });
 
