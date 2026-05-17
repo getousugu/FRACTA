@@ -333,10 +333,24 @@ function applyDoTs(state: BattleState): BattleState {
     const dots = active.effects.filter(e => e.category === 'dot');
     for (const dot of dots) {
       const dmg = calcDoTDamage(dot, active);
-      s = updateChar(s, team, active.id, (c) => ({
-        ...c,
-        hp: Math.max(0, c.hp - dmg),
-      }));
+      s = updateChar(s, team, active.id, (c) => {
+        let newEffects = c.effects;
+        if (dot.id === 'burn') {
+          newEffects = c.effects
+            .map(e => {
+              if (e.id === 'burn') {
+                return { ...e, value: Math.floor(e.value / 2) };
+              }
+              return e;
+            })
+            .filter(e => e.id !== 'burn' || e.value > 0);
+        }
+        return {
+          ...c,
+          hp: Math.max(0, c.hp - dmg),
+          effects: newEffects,
+        };
+      });
       s = addLog(s, `${active.name}が「${dot.name}」で${dmg}ダメージ`);
       s = triggerPassives(s, 'on_damage_received', { targetCharId: active.id });
     }
