@@ -42,7 +42,7 @@ export default function Home() {
             textShadow: '0 0 40px rgba(214, 48, 49, 0.3)'
           }}
         >
-          CLASH
+          FRACTA
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: 14, fontWeight: 500, letterSpacing: '0.05em' }}>
           1v1 ターン制対戦ゲーム
