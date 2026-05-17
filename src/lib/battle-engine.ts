@@ -343,7 +343,7 @@ function applyDoTs(state: BattleState): BattleState {
               }
               return e;
             })
-            .filter(e => e.id !== 'burn' || e.value > 0);
+            .filter(e => e.id !== 'burn' || e.value > 5);
         }
         return {
           ...c,
