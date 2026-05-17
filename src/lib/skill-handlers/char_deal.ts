@@ -9,7 +9,7 @@ import { calcDamage } from '../damage';
 import { applyEffect } from '../effects';
 import { triggerPassives } from '../passives';
 
-type Card = { num: number; color: number }; // color: 1=赤, 2=青, 3=緑
+type Card = { num: number; color: number; isJoker?: boolean }; // color: 1=赤, 2=青, 3=緑
 
 // ============================================================
 // ユーティリティ
@@ -147,7 +147,7 @@ function syncHandCards(char: CharacterState): CharacterState {
 
   const colorNames = ['', '赤', '青', '緑'];
   const text = cards.length > 0
-    ? cards.map(c => `${colorNames[c.color]}${c.num}`).join(' ')
+    ? cards.map(c => c.isJoker ? '🃏JOKER' : `${colorNames[c.color]}${c.num}`).join(' ')
     : 'なし';
 
   let nextChar = setResource(char, 'hand_cards', numericValue, true);
@@ -162,7 +162,14 @@ function syncHandCards(char: CharacterState): CharacterState {
 }
 
 // ドロー処理
-function drawCard(): Card {
+function drawCard(char?: CharacterState): Card {
+  let prob = 0.01;
+  if (char && char.battleFlags['pig_last_turn']) {
+    prob = 0.02;
+  }
+  if (Math.random() < prob) {
+    return { num: 0, color: 0, isJoker: true };
+  }
   const num = Math.floor(Math.random() * 5) + 1;
   const color = Math.floor(Math.random() * 3) + 1;
   return { num, color };
@@ -266,6 +273,76 @@ function evaluateHand(cards: Card[]): string[] {
   }
 
   return roles;
+}
+
+const ROLE_SCORES: Record<string, number> = {
+  'ウルトラストレートフラッシュ': 1000,
+  'ストレートフラッシュ': 900,
+  'スリーカード': 800,
+  'ストレート': 700,
+  'フラッシュ赤': 600,
+  'フラッシュ青': 600,
+  'フラッシュ緑': 600,
+  'レインボー': 500,
+  'ワンペア赤': 400,
+  'ワンペア青': 400,
+  'ワンペア緑': 400,
+  'ブタ': 100
+};
+
+function evaluatePossibleHand(cards: Card[], hasJoker: boolean): string[] {
+  const roles = evaluateHand(cards);
+  if (hasJoker && roles.includes('ストレートフラッシュ')) {
+    return ['ウルトラストレートフラッシュ'];
+  }
+  return roles;
+}
+
+function evaluateHandWithJoker(cards: Card[]): string[] {
+  const jokerCount = cards.filter(c => c.isJoker).length;
+  if (jokerCount === 0) {
+    return evaluateHand(cards);
+  }
+
+  let bestRoles: string[] = ['ブタ'];
+  let bestScore = 0;
+
+  const normalCards: Card[] = [];
+  for (let c = 1; c <= 3; c++) {
+    for (let n = 1; n <= 5; n++) {
+      normalCards.push({ num: n, color: c });
+    }
+  }
+
+  function getScore(roles: string[]): number {
+    return roles.reduce((sum, r) => sum + (ROLE_SCORES[r] ?? 100), 0);
+  }
+
+  function recurse(currentHand: Card[], jokerIndices: number[]) {
+    if (jokerIndices.length === 0) {
+      const roles = evaluatePossibleHand(currentHand, true);
+      const score = getScore(roles);
+      if (score > bestScore) {
+        bestScore = score;
+        bestRoles = roles;
+      }
+      return;
+    }
+
+    const nextJokerIndex = jokerIndices[0];
+    const remainingJokers = jokerIndices.slice(1);
+
+    for (const replacement of normalCards) {
+      const nextHand = [...currentHand];
+      nextHand[nextJokerIndex] = replacement;
+      recurse(nextHand, remainingJokers);
+    }
+  }
+
+  const jokerIndices = cards.map((c, i) => c.isJoker ? i : -1).filter(i => i !== -1);
+  recurse(cards, jokerIndices);
+
+  return bestRoles;
 }
 
 // 役効果の適用
@@ -457,7 +534,50 @@ function applyRoleEffects(
         s = addLog(s, `ストレートフラッシュの効果 → ${enemy.name}に${dmg}ダメージ、敵控えに${benchDmg}ダメージ、味方全体HP8%回復`);
         break;
       }
+      case 'ウルトラストレートフラッシュ': {
+        const isCheating = actor.battleFlags.is_cheating as boolean;
+        if (isCheating) {
+          s = addLog(s, `※イカサマのためウルトラストレートフラッシュは不発となり、通常のストレートフラッシュとして処理されます。`);
+          const mult = 1.5 * dmgMultiplier;
+          const dmg = Math.floor(calcDamage(actor, enemy, { multiplier: mult }));
+          s = dealDamage(s, actorTeam, dmg);
+          const benchDmg = Math.floor(calcDamage(actor, enemy, { multiplier: 0.75 }));
+          s = dealDamageToBench(s, actorTeam, benchDmg);
+          s = healAll(s, actorTeam, Math.floor(actor.maxHp * 0.08));
+          s = addLog(s, `ストレートフラッシュの効果 → ${enemy.name}に${dmg}ダメージ、敵控えに${benchDmg}ダメージ、味方全体HP8%回復`);
+        } else {
+          const mult = 2.0 * dmgMultiplier;
+          const dmg = Math.floor(calcDamage(actor, enemy, { multiplier: mult }));
+          s = dealDamage(s, actorTeam, dmg);
+          const benchDmg = Math.floor(calcDamage(actor, enemy, { multiplier: 1.25 }));
+          s = dealDamageToBench(s, actorTeam, benchDmg);
+          s = healAll(s, actorTeam, Math.floor(actor.maxHp * 0.15));
+          s = addLog(s, `ウルトラストレートフラッシュの効果！ → ${enemy.name}に${dmg}ダメージ、敵控えに${benchDmg}ダメージ、味方全体HP15%回復`);
+        }
+        break;
+      }
     }
+  }
+
+  // ブタフラグおよびイカサマフラグの管理
+  if (!isInstant) {
+    const isPig = roles.includes('ブタ');
+    s = updateActiveChar(s, actorTeam, (c) => ({
+      ...c,
+      battleFlags: {
+        ...c.battleFlags,
+        pig_last_turn: isPig,
+        is_cheating: false
+      }
+    }));
+  } else {
+    s = updateActiveChar(s, actorTeam, (c) => ({
+      ...c,
+      battleFlags: {
+        ...c.battleFlags,
+        is_cheating: false
+      }
+    }));
   }
 
   // 回復上限の適用
@@ -517,8 +637,13 @@ function discardAndDraw(char: CharacterState, color: number): CharacterState {
     }
   }
 
-  const newNum = Math.floor(Math.random() * 5) + 1;
-  cards.push({ num: newNum, color });
+  const prob = char.battleFlags['pig_last_turn'] ? 0.02 : 0.01;
+  if (Math.random() < prob) {
+    cards.push({ num: 0, color: 0, isJoker: true });
+  } else {
+    const newNum = Math.floor(Math.random() * 5) + 1;
+    cards.push({ num: newNum, color });
+  }
 
   let nextChar = {
     ...char,
@@ -588,7 +713,7 @@ const deal_s2_redraw_all: SkillHandler = (state, actorTeam) => {
   const enemy = getEnemy(state, actorTeam);
 
   let s = updateActiveChar(state, actorTeam, (c) => {
-    const cards = [drawCard(), drawCard(), drawCard()];
+    const cards = [drawCard(c), drawCard(c), drawCard(c)];
     const nextChar = {
       ...c,
       battleFlags: {
@@ -656,7 +781,7 @@ const deal_s5_instant_showdown: SkillHandler = (state, actorTeam) => {
   const cards = (actor.battleFlags['hand_cards'] as Card[]) ?? [];
 
   let s = addLog(state, `${actor.name}の「インスタントショウダウン」発動！`);
-  const roles = evaluateHand(cards);
+  const roles = evaluateHandWithJoker(cards);
   s = applyRoleEffects(s, roles, actorTeam, true);
 
   return s;
@@ -701,7 +826,8 @@ const deal_s6_cheating: SkillHandler = (state, actorTeam) => {
       ...c,
       battleFlags: {
         ...c.battleFlags,
-        hand_cards: cards
+        hand_cards: cards,
+        is_cheating: true
       }
     };
     return syncHandCards(nextChar);
@@ -735,7 +861,7 @@ const deal_passive_turn_start: PassiveHandler = (state, ownerTeam, ownerCharId) 
   if (!char || !char.isActive) return state;
 
   let s = updateChar(state, ownerTeam, ownerCharId, (c) => {
-    const cards = [drawCard(), drawCard(), drawCard()];
+    const cards = [drawCard(c), drawCard(c), drawCard(c)];
     const bonusRedraw = (c.battleFlags['pending_redraw_bonus'] as number) ?? 0;
     const nextRedraw = Math.min(3, 1 + bonusRedraw);
 
@@ -767,7 +893,7 @@ const deal_passive_showdown: PassiveHandler = (state, ownerTeam, ownerCharId) =>
   const cards = (char.battleFlags['hand_cards'] as Card[]) ?? [];
 
   let s = addLog(state, `${char.name}の「ショウダウン」発動！`);
-  const roles = evaluateHand(cards);
+  const roles = evaluateHandWithJoker(cards);
   s = applyRoleEffects(s, roles, ownerTeam, false);
 
   return s;
