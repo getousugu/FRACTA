@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Battle Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* =============================================
+   RESET & BASE
+============================================= */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0a0e1a;
+  --bg2:       #111827;
+  --bg3:       #1a2236;
+  --bg4:       #1f2d45;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.13);
+  --text:      #e8eaf0;
+  --text2:     #8b93a8;
+  --text3:     #556070;
+  --accent:    #00e5a0;
+  --accent-dim:#00a870;
+  --danger:    #ff4d6d;
+  --warn:      #ffa040;
+  --info:      #4da6ff;
+  --cost-dot:  #ff5566;
+  --hp-bar:    #00e5a0;
+  --hp-enemy:  #ff5566;
+
+  --font-title: 'Rajdhani', sans-serif;
+  --font-body:  'Noto Sans JP', sans-serif;
+  --r:         6px;
+  --r2:        10px;
+  --r3:        14px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  height: 100vh;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 1fr;
+}
+
+/* =============================================
+   SCANLINE OVERLAY
+============================================= */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* =============================================
+   LAYOUT
+============================================= */
+.battle-wrap {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0;
+}
+
+/* ---- TOP: ENEMY HALF ---- */
+.enemy-half {
+  background: linear-gradient(180deg, #0d1422 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border2);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  padding: 10px 14px 8px;
+  gap: 8px;
+}
+
+/* Enemy team bar */
+.team-bar {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.mini-card {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 7px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  transition: border-color .2s;
+}
+.mini-card.active {
+  border-color: var(--accent-dim);
+  background: #162236;
+}
+.mini-card.dead {
+  opacity: 0.35;
+}
+
+.mini-card-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.elem-badge {
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.mini-name {
+  font-family: var(--font-title);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: .02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mini-sub {
+  font-size: 10px;
+  color: var(--text3);
+}
+.mini-hp-bar-wrap {
+  height: 3px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.mini-hp-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--hp-bar);
+  transition: width .5s ease;
+}
+.enemy-half .mini-hp-bar-fill { background: var(--hp-enemy); }
+.mini-hp-text {
+  font-size: 10px;
+  color: var(--text3);
+  text-align: right;
+  font-family: var(--font-title);
+}
+.mini-status-row {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.status-pip {
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(255,160,64,0.18);
+  color: var(--warn);
+  border: 1px solid rgba(255,160,64,0.3);
+  font-family: var(--font-title);
+  font-weight: 600;
+}
+.status-pip.buff { background: rgba(0,229,160,0.12); color: var(--accent); border-color: rgba(0,229,160,0.3); }
+.status-pip.dot  { background: rgba(255,77,109,0.15); color: var(--danger); border-color: rgba(255,77,109,0.3); }
+
+/* Active indicator on mini card */
+.active-tag {
+  position: absolute;
+  top: 5px; right: 7px;
+  font-size: 9px;
+  font-family: var(--font-title);
+  font-weight: 700;
+  color: var(--hp-enemy);
+  letter-spacing: .08em;
+}
+
+/* ---- ENEMY DETAIL CARD ---- */
+.enemy-detail {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r3);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0;
+  overflow: hidden;
+}
+
+.char-portrait {
+  width: 64px;
+  background: linear-gradient(135deg, #1a2840, #0e1825);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.char-info {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.char-name-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.char-name {
+  font-family: var(--font-title);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+.char-stats-text {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--font-title);
+  white-space: nowrap;
+}
+
+.hp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hp-label {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--font-title);
+  flex-shrink: 0;
+}
+.hp-bar-wrap {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.hp-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--hp-bar);
+  transition: width .5s ease;
+}
+.enemy-detail .hp-bar-fill { background: var(--hp-enemy); }
+.hp-value {
+  font-family: var(--font-title);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hp-enemy);
+  white-space: nowrap;
+}
+.self-detail .hp-value { color: var(--accent); }
+
+/* buff/debuff row */
+.effects-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.effect-tag {
+  font-size: 10px;
+  font-family: var(--font-title);
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: .04em;
+}
+.effect-tag.buff    { background: rgba(0,229,160,0.12); color: var(--accent); border: 1px solid rgba(0,229,160,0.25); }
+.effect-tag.debuff  { background: rgba(255,77,109,0.12); color: var(--danger); border: 1px solid rgba(255,77,109,0.25); }
+.effect-tag.dot     { background: rgba(255,160,64,0.12); color: var(--warn);   border: 1px solid rgba(255,160,64,0.25); }
+.effect-tag.none    { color: var(--text3); font-size: 10px; }
+
+/* resource row */
+.resource-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.resource-chip {
+  font-size: 11px;
+  font-family: var(--font-title);
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.resource-chip .res-val {
+  color: var(--info);
+  font-weight: 700;
+  font-size: 13px;
+}
+.resource-chip .res-max { color: var(--text3); }
+
+/* right side: cost display */
+.char-right {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-left: 1px solid var(--border);
+  min-width: 90px;
+}
+.cost-label {
+  font-size: 9px;
+  color: var(--text3);
+  font-family: var(--font-title);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.cost-dots {
+  display: flex;
+  gap: 5px;
+}
+.cost-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--cost-dot);
+  box-shadow: 0 0 6px rgba(255,85,102,0.5);
+}
+.cost-dot.empty {
+  background: transparent;
+  border: 1px solid var(--text3);
+  box-shadow: none;
+}
+.turn-indicator {
+  font-size: 9px;
+  font-family: var(--font-title);
+  font-weight: 700;
+  letter-spacing: .1em;
+  padding: 3px 7px;
+  border-radius: 4px;
+}
+.turn-indicator.enemy-turn {
+  background: rgba(255,77,109,0.15);
+  color: var(--danger);
+  border: 1px solid rgba(255,77,109,0.3);
+}
+.turn-indicator.my-turn {
+  background: rgba(0,229,160,0.12);
+  color: var(--accent);
+  border: 1px solid rgba(0,229,160,0.25);
+}
+
+/* =============================================
+   LOG STRIP (middle)
+============================================= */
+.log-strip {
+  background: #0d1220;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 5px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+.log-turn-badge {
+  font-family: var(--font-title);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(0,229,160,0.08);
+  border: 1px solid rgba(0,229,160,0.2);
+  border-radius: 4px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.log-entries {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+}
+.log-line {
+  font-size: 11px;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+.log-line.highlight { color: var(--text); }
+.log-line .dmg { color: var(--danger); font-family: var(--font-title); font-weight: 700; }
+.log-line .heal { color: var(--accent); font-family: var(--font-title); font-weight: 700; }
+.log-expand {
+  font-size: 10px;
+  color: var(--text3);
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: color .2s, border-color .2s;
+  background: none;
+  font-family: var(--font-body);
+}
+.log-expand:hover { color: var(--text2); border-color: var(--border2); }
+
+/* =============================================
+   BOTTOM: SELF HALF
+============================================= */
+.self-half {
+  background: linear-gradient(0deg, #0b1020 0%, var(--bg) 100%);
+  border-top: 1px solid var(--border2);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: 8px 14px 10px;
+  gap: 8px;
+}
+
+.self-detail {
+  background: var(--bg3);
+  border: 1px solid rgba(0,229,160,0.15);
+  border-radius: var(--r3);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  overflow: hidden;
+}
+
+.self-char-portrait {
+  width: 64px;
+  background: linear-gradient(135deg, #0e2020, #0a1a14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* =============================================
+   BOTTOM ACTIONS AREA
+============================================= */
+.actions-area {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: start;
+}
+
+.skill-section { display: flex; flex-direction: column; gap: 6px; }
+
+.skill-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.skill-label {
+  font-size: 10px;
+  font-family: var(--font-title);
+  color: var(--text3);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.cost-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cost-display-label {
+  font-size: 10px;
+  color: var(--text3);
+  font-family: var(--font-title);
+}
+.cost-pips {
+  display: flex;
+  gap: 4px;
+}
+.cost-pip {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--cost-dot);
+  box-shadow: 0 0 5px rgba(255,85,102,0.4);
+}
+.cost-pip.spent {
+  background: rgba(255,255,255,0.1);
+  box-shadow: none;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* skill grid */
+.skill-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.skill-btn {
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 7px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  transition: background .15s, border-color .15s, transform .08s;
+  position: relative;
+  overflow: visible;
+}
+.skill-btn:hover:not(.disabled) {
+  background: #243050;
+  border-color: rgba(0,229,160,0.35);
+  transform: translateY(-1px);
+}
+.skill-btn:active:not(.disabled) { transform: translateY(0); }
+.skill-btn.disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+.skill-btn.derived {
+  border-color: rgba(255,160,64,0.4);
+  background: rgba(255,160,64,0.06);
+}
+
+.skill-cost-badge {
+  font-family: var(--font-title);
+  font-size: 12px;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.skill-cost-badge.c1 { background: rgba(0,229,160,0.15); color: var(--accent); }
+.skill-cost-badge.c2 { background: rgba(255,160,64,0.15); color: var(--warn); }
+.skill-cost-badge.c3 { background: rgba(255,77,109,0.15); color: var(--danger); }
+.skill-cost-badge.c0 { background: rgba(255,255,255,0.07); color: var(--text3); }
+
+.skill-name {
+  font-family: var(--font-title);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.skill-btn.disabled .skill-name { color: var(--text3); }
+
+.skill-cost-text {
+  font-family: var(--font-title);
+  font-size: 11px;
+  color: var(--text3);
+}
+
+/* Tooltip */
+.skill-btn .tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #1a2840;
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 7px 10px;
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.5;
+  z-index: 100;
+  white-space: normal;
+  pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+.skill-btn:hover:not(.disabled) .tooltip { display: block; }
+
+/* derived badge */
+.derived-tag {
+  font-size: 8px;
+  font-family: var(--font-title);
+  font-weight: 700;
+  background: rgba(255,160,64,0.2);
+  color: var(--warn);
+  border: 1px solid rgba(255,160,64,0.3);
+  border-radius: 3px;
+  padding: 1px 4px;
+  letter-spacing: .05em;
+}
+
+/* =============================================
+   RIGHT SIDE: TEAM + ACTIONS
+============================================= */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 130px;
+}
+
+.self-team-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.self-mini-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.self-mini-card:hover:not(.active-self) { border-color: var(--border2); background: var(--bg4); }
+.self-mini-card.active-self {
+  border-color: rgba(0,229,160,0.3);
+  background: #0e2020;
+  cursor: default;
+}
+.self-mini-card.dead { opacity: 0.3; cursor: not-allowed; }
+
+.switch-label {
+  font-size: 9px;
+  font-family: var(--font-title);
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--info);
+  background: rgba(77,166,255,0.1);
+  border: 1px solid rgba(77,166,255,0.2);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.btn-end-turn {
+  background: rgba(0,229,160,0.1);
+  border: 1px solid rgba(0,229,160,0.3);
+  color: var(--accent);
+  border-radius: var(--r);
+  padding: 9px 10px;
+  font-family: var(--font-title);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .08s;
+  text-transform: uppercase;
+}
+.btn-end-turn:hover { background: rgba(0,229,160,0.18); border-color: rgba(0,229,160,0.55); }
+.btn-end-turn:active { transform: scale(0.97); }
+
+/* =============================================
+   TURN BANNER (center overlay on log strip)
+============================================= */
+.turn-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  font-family: var(--font-title);
+}
+
+/* =============================================
+   UTILITY
+============================================= */
+.sep { width: 1px; background: var(--border); flex-shrink: 0; }
+
+/* blinking dot */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.blink { animation: blink 1.4s ease-in-out infinite; }
+
+/* pulse glow for YOUR TURN */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,229,160,0.3); }
+  50% { box-shadow: 0 0 0 4px rgba(0,229,160,0.08); }
+}
+.my-turn-glow { animation: glow-pulse 2s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<div class="battle-wrap">
+
+  <!-- ========== ENEMY HALF ========== -->
+  <div class="enemy-half">
+
+    <!-- Enemy team 3 mini cards -->
+    <div class="team-bar">
+
+      <!-- Card 1: dead -->
+      <div class="mini-card dead">
+        <div class="mini-card-top">
+          <span class="elem-badge">🔥</span>
+          <div>
+            <div class="mini-name">炎巨人ガルド</div>
+            <div class="mini-sub">ATK 130 / DEF 40</div>
+          </div>
+        </div>
+        <div class="mini-hp-bar-wrap"><div class="mini-hp-bar-fill" style="width:0%"></div></div>
+        <div class="mini-hp-text">0 / 1100</div>
+      </div>
+
+      <!-- Card 2: active -->
+      <div class="mini-card active">
+        <div class="active-tag blink">OUT</div>
+        <div class="mini-card-top">
+          <span class="elem-badge">🌑</span>
+          <div>
+            <div class="mini-name">時詠みの魔女</div>
+            <div class="mini-sub">ATK 115 / DEF 45</div>
+          </div>
+        </div>
+        <div class="mini-hp-bar-wrap"><div class="mini-hp-bar-fill" style="width:70%"></div></div>
+        <div class="mini-hp-text">630 / 900</div>
+        <div class="mini-status-row">
+          <span class="status-pip dot">毒</span>
+          <span class="status-pip">防↓</span>
+        </div>
+      </div>
+
+      <!-- Card 3: bench -->
+      <div class="mini-card">
+        <div class="mini-card-top">
+          <span class="elem-badge">💧</span>
+          <div>
+            <div class="mini-name">ルートJ</div>
+            <div class="mini-sub">ATK 110 / DEF 48</div>
+          </div>
+        </div>
+        <div class="mini-hp-bar-wrap"><div class="mini-hp-bar-fill" style="width:100%"></div></div>
+        <div class="mini-hp-text">1300 / 1300</div>
+        <div class="mini-status-row">
+          <span class="status-pip buff">ATK↑</span>
+        </div>
+      </div>
+
+    </div><!-- /team-bar -->
+
+    <!-- Enemy active character detail -->
+    <div class="enemy-detail">
+      <div class="char-portrait">🌑</div>
+
+      <div class="char-info">
+        <div class="char-name-row">
+          <div class="char-name">時詠みの魔女</div>
+          <div class="char-stats-text">ATK 115 / DEF 45</div>
+        </div>
+
+        <div class="hp-row">
+          <div class="hp-label">HP</div>
+          <div class="hp-bar-wrap"><div class="hp-bar-fill" style="width:70%"></div></div>
+          <div class="hp-value">630 / 900</div>
+        </div>
+
+        <!-- Buffs/Debuffs — 完全公開 -->
+        <div class="effects-row">
+          <span class="effect-tag dot">毒 (2T)</span>
+          <span class="effect-tag debuff">防御-20% (1T)</span>
+          <span class="effect-tag buff">速度+10% (3T)</span>
+        </div>
+
+        <!-- 固有リソース — 完全公開 -->
+        <div class="resource-row">
+          <span class="resource-chip">時計スタック <span class="res-val">4</span><span class="res-max">/12</span></span>
+          <span class="resource-chip">時の一錠 <span class="res-val">12</span><span class="res-max">/99</span></span>
+        </div>
+      </div>
+
+      <!-- 相手の残コスト — 完全公開 -->
+      <div class="char-right">
+        <div>
+          <div class="cost-label">相手コスト</div>
+          <div style="margin-top:5px">
+            <div class="cost-dots">
+              <div class="cost-dot"></div>
+              <div class="cost-dot"></div>
+              <div class="cost-dot empty"></div>
+            </div>
+            <div style="font-size:10px;color:var(--text3);font-family:var(--font-title);margin-top:3px;text-align:right;">残 2 / 3</div>
+          </div>
+        </div>
+        <div class="turn-indicator enemy-turn">相手のターン</div>
+      </div>
+    </div><!-- /enemy-detail -->
+
+  </div><!-- /enemy-half -->
+
+
+  <!-- ========== LOG STRIP ========== -->
+  <div class="log-strip">
+    <div class="log-turn-badge">TURN 3</div>
+    <div class="log-entries">
+      <div class="log-line highlight">時詠みの魔女 が「時の呪縛」を使用 → ローラン に <span class="dmg">142</span> ダメージ</div>
+      <div class="log-line">毒 で時詠みの魔女 が <span class="dmg">38</span> ダメージ（DoT）</div>
+    </div>
+    <button class="log-expand">全ログ ▾</button>
+  </div>
+
+
+  <!-- ========== SELF HALF ========== -->
+  <div class="self-half">
+
+    <!-- Self active character detail -->
+    <div class="self-detail">
+      <div class="self-char-portrait">🌿</div>
+
+      <div class="char-info">
+        <div class="char-name-row">
+          <div class="char-name" style="color:var(--accent);">ローラン</div>
+          <div class="char-stats-text">ATK 110 / DEF 48</div>
+        </div>
+
+        <div class="hp-row">
+          <div class="hp-label">HP</div>
+          <div class="hp-bar-wrap"><div class="hp-bar-fill" style="width:85%; background:var(--hp-bar);"></div></div>
+          <div class="hp-value" style="color:var(--accent);">858 / 1000</div>
+        </div>
+
+        <!-- 自分のバフ・デバフ -->
+        <div class="effects-row">
+          <span class="effect-tag buff">ATK+15% (2T)</span>
+          <span class="effect-tag none">デバフなし</span>
+        </div>
+
+        <!-- 自分の固有リソース -->
+        <div class="resource-row">
+          <span class="resource-chip">武器習熟 <span class="res-val" style="color:var(--warn);">3</span><span class="res-max">/8</span></span>
+          <span class="resource-chip">追撃スタック <span class="res-val" style="color:var(--warn);">2</span><span class="res-max">/5</span></span>
+        </div>
+      </div>
+
+      <!-- 自分の残コスト + YOUR TURN -->
+      <div class="char-right" style="border-left:1px solid rgba(0,229,160,0.15);">
+        <div>
+          <div class="cost-label">残コスト</div>
+          <div style="margin-top:5px">
+            <div class="cost-dots">
+              <div class="cost-dot" style="background:var(--accent);box-shadow:0 0 6px rgba(0,229,160,0.5);"></div>
+              <div class="cost-dot" style="background:var(--accent);box-shadow:0 0 6px rgba(0,229,160,0.5);"></div>
+              <div class="cost-dot" style="background:var(--accent);box-shadow:0 0 6px rgba(0,229,160,0.5);"></div>
+            </div>
+            <div style="font-size:10px;color:var(--accent);font-family:var(--font-title);margin-top:3px;text-align:right;">残 3 / 3</div>
+          </div>
+        </div>
+        <div class="turn-indicator my-turn my-turn-glow blink">YOUR TURN</div>
+      </div>
+    </div><!-- /self-detail -->
+
+
+    <!-- Actions area -->
+    <div class="actions-area">
+
+      <!-- LEFT: Skill grid -->
+      <div class="skill-section">
+        <div class="skill-section-header">
+          <span class="skill-label">スキル</span>
+          <div class="cost-display">
+            <span class="cost-display-label">コスト</span>
+            <div class="cost-pips">
+              <div class="cost-pip"></div>
+              <div class="cost-pip"></div>
+              <div class="cost-pip"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="skill-grid">
+
+          <div class="skill-btn">
+            <div class="skill-cost-badge c2">2</div>
+            <div class="skill-name">デュランダル</div>
+            <div class="tooltip">ATK×1.8の単体ダメージ。武器習熟が5以上なら追加でATK×0.5の貫通ダメージ。使用後、派生スキル「斬撃連鎖」を解放。</div>
+          </div>
+
+          <div class="skill-btn">
+            <div class="skill-cost-badge c1">1</div>
+            <div class="skill-name">ロジックアトリエ</div>
+            <div class="tooltip">ATK×1.2のダメージ。追撃スタックを1得る。スタックが5になると自動で「猛追」が発動する。</div>
+          </div>
+
+          <div class="skill-btn">
+            <div class="skill-cost-badge c2">2</div>
+            <div class="skill-name">アラス工房</div>
+            <div class="tooltip">自身のDEFを20%上昇（2ターン）、かつ追撃スタックを2消費してATK×0.6×消費数の追撃ダメージ。</div>
+          </div>
+
+          <div class="skill-btn disabled">
+            <div class="skill-cost-badge c3">3</div>
+            <div class="skill-name">狐牙工房</div>
+            <div class="tooltip">コスト3。ATK×3.0の大ダメージ。武器習熟を最大まで消費し、消費量×ATK×0.2の追加ダメージ。</div>
+          </div>
+
+          <!-- 派生スキル（解放済み） -->
+          <div class="skill-btn derived" style="grid-column: 1 / -1;">
+            <div class="skill-cost-badge c1">1</div>
+            <div class="skill-name">斬撃連鎖</div>
+            <span class="derived-tag">派生</span>
+            <div class="tooltip">【派生】デュランダル使用後のみ。ATK×1.0のダメージ＋武器習熟+1。このターン内のみ使用可能。</div>
+          </div>
+
+        </div><!-- /skill-grid -->
+      </div><!-- /skill-section -->
+
+
+      <!-- RIGHT: team + buttons -->
+      <div class="right-panel">
+
+        <!-- 自分チームの控えカード（交代ボタン付き） -->
+        <div class="self-team-bar">
+          <div class="self-mini-card active-self">
+            <span class="elem-badge" style="font-size:13px;">🌿</span>
+            <div style="flex:1;min-width:0;">
+              <div class="mini-name" style="font-size:11px;color:var(--accent);">ローラン</div>
+              <div class="mini-hp-bar-wrap" style="height:2px;margin-top:3px;"><div class="mini-hp-bar-fill" style="width:85%;background:var(--hp-bar);"></div></div>
+            </div>
+            <div style="font-size:9px;color:var(--accent);font-family:var(--font-title);font-weight:700;">出場中</div>
+          </div>
+
+          <div class="self-mini-card" title="クリックして交代（スキル未使用時のみ）">
+            <span class="elem-badge" style="font-size:13px;">⬜</span>
+            <div style="flex:1;min-width:0;">
+              <div class="mini-name" style="font-size:11px;">E-P-P</div>
+              <div class="mini-hp-bar-wrap" style="height:2px;margin-top:3px;"><div class="mini-hp-bar-fill" style="width:100%;background:var(--hp-bar);"></div></div>
+            </div>
+            <span class="switch-label">交代</span>
+          </div>
+
+          <div class="self-mini-card" title="クリックして交代（スキル未使用時のみ）">
+            <span class="elem-badge" style="font-size:13px;">🌿</span>
+            <div style="flex:1;min-width:0;">
+              <div class="mini-name" style="font-size:11px;">インディケイト</div>
+              <div class="mini-hp-bar-wrap" style="height:2px;margin-top:3px;"><div class="mini-hp-bar-fill" style="width:96%;background:var(--hp-bar);"></div></div>
+            </div>
+            <span class="switch-label">交代</span>
+          </div>
+        </div><!-- /self-team-bar -->
+
+        <div class="action-buttons">
+          <button class="btn-end-turn">ターン終了</button>
+        </div>
+
+      </div><!-- /right-panel -->
+
+    </div><!-- /actions-area -->
+
+  </div><!-- /self-half -->
+
+</div><!-- /battle-wrap -->
+
+</body>
+</html>

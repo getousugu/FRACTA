@@ -1,0 +1,1304 @@
+[
+  {
+    "id": "char_route_j",
+    "name": "ルート.J",
+    "element": "none",
+    "hp": 1300,
+    "atk": 85,
+    "def": 60,
+    "custom_resources": [
+      {
+        "id": "death_sentence",
+        "name": "死の宣告",
+        "initial_value": 0,
+        "min": 0,
+        "max": 15,
+        "display": "stack"
+      },
+      {
+        "id": "enemy_stagnation",
+        "name": "敵陣膠着",
+        "initial_value": 0,
+        "min": 0,
+        "max": 10,
+        "display": "stack"
+      },
+      {
+        "id": "tenacity",
+        "name": "食いしばり",
+        "initial_value": 0,
+        "min": 0,
+        "max": 1,
+        "display": "stack"
+      }
+    ],
+    "passives": [
+      {
+        "id": "char_route_j_passive_switch_in",
+        "name": "前線維持",
+        "trigger": "on_switch_in",
+        "description": "場に出た時、死の宣告と敵陣膠着をそれぞれ1得る。"
+      },
+      {
+        "id": "char_route_j_passive_turn_start",
+        "name": "刻む時間",
+        "trigger": "on_turn_start",
+        "description": "自分のターン開始時、死の宣告と敵陣膠着をそれぞれ1増加させる（敵陣膠着は最大10）。"
+      },
+      {
+        "id": "char_route_j_passive_damage_reduce",
+        "name": "敵陣膠着",
+        "trigger": "passive_while_active",
+        "description": "場に出ている間、受けるダメージを敵陣膠着×1%減少させる（最大10%）。"
+      },
+      {
+        "id": "char_route_j_passive_switch_out",
+        "name": "撹乱の余韻",
+        "trigger": "on_switch_out",
+        "description": "控えに下がる時、敵陣膠着の現在値と同じ数値の「敵陣突破」バフを次の味方キャラクターに付与する。"
+      },
+      {
+        "id": "char_route_j_passive_death_judgment",
+        "name": "死の宣告",
+        "trigger": "on_turn_end",
+        "description": "自分のターン終了時、死の宣告が15に達していれば死亡する（DoT判定前に処理）。"
+      }
+    ],
+    "skills": [
+      {
+        "id": "char_route_j_s1",
+        "name": "受け止める",
+        "cost": 1,
+        "description": "ATK分のダメージを与え、自身のDEFを永続的に1%上昇させる（重ねがけ可能、上限なし）。",
+        "unlocks": []
+      },
+      {
+        "id": "char_route_j_s2",
+        "name": "幕引きまでの時間稼ぎ",
+        "cost": 2,
+        "description": "敵陣膠着を1得る（最大10）。ATK×0.82のダメージを3回与える。派生スキル「まだ終わりは遠い」をこのターン内に解放する。",
+        "unlocks": [
+          {
+            "skillId": "char_route_j_s2_d1",
+            "available": "same_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_route_j_s3",
+        "name": "ジョーカーへ告ぐ",
+        "cost": 3,
+        "description": "死の宣告を5増加させる（このスキルによる戦闘中の合計増加は最大14まで）。ATK×1.2に加え、死の宣告1につきさらに+10%のダメージを与える。食いしばりを1得る（戦闘中1度のみ発動・最大1）。",
+        "unlocks": []
+      },
+      {
+        "id": "char_route_j_s4",
+        "name": "芽生えた意識",
+        "cost": 2,
+        "description": "死の宣告を2減少させ、敵陣膠着を1減少させる。ATKを2ターンの間20%上昇させる。派生スキル「果たせなかった役目」を次のターンに解放する。",
+        "unlocks": [
+          {
+            "skillId": "char_route_j_s4_d1",
+            "available": "next_turn"
+          }
+        ]
+      }
+    ],
+    "derived_skills": [
+      {
+        "id": "char_route_j_s2_d1",
+        "name": "まだ終わりは遠い",
+        "cost": 1,
+        "description": "死の宣告を1増加させる。DEFを3ターンの間15%上昇させる。相手の優先度を2ターンの間1下げるデバフを付与する。",
+        "unlocked_by": "char_route_j_s2",
+        "available": "same_turn"
+      },
+      {
+        "id": "char_route_j_s4_d1",
+        "name": "果たせなかった役目",
+        "cost": 1,
+        "description": "HPを最大HPの10%消耗する。死の宣告を3増加させる。ATK×1.5のダメージを与える。この戦闘中、「芽生えた意識」と「果たせなかった役目」を使用不可にする。",
+        "unlocked_by": "char_route_j_s4",
+        "available": "next_turn"
+      }
+    ]
+  },
+  {
+    "id": "char_fighter",
+    "name": "炎の剣士",
+    "element": "fire",
+    "hp": 1100,
+    "atk": 130,
+    "def": 70,
+    "flavor_text": "炎を操る剣士。彼の剣撃はすべてを焼き尽くす。\n「俺の剣に斬れぬものはない……！」",
+    "custom_resources": [],
+    "passives": [
+      {
+        "id": "char_fighter_passive_counter",
+        "name": "反撃の意志",
+        "trigger": "on_turn_end",
+        "description": "自分のターン終了時、そのターンにダメージを受けていた場合、ATK×0.5の反撃ダメージを与える。",
+        "flavor_text": "「やられっぱなしで終わるかよ！」"
+      },
+      {
+        "id": "char_fighter_passive_berserk",
+        "name": "狂戦士",
+        "trigger": "passive_while_active",
+        "description": "HPが50%以下の場合、ATKが40%上昇する。",
+        "flavor_text": "傷つくほどに、彼の刃は熱と鋭さを増していく。"
+      }
+    ],
+    "skills": [
+      {
+        "id": "char_fighter_s1",
+        "name": "通常攻撃",
+        "cost": 1,
+        "description": "ATK×1.2のダメージを与える。派生スキル「連撃」をこのターン内に解放する。",
+        "flavor_text": "基本にして至高の型。",
+        "unlocks": [
+          {
+            "skillId": "char_fighter_s1_d1",
+            "available": "same_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_fighter_s2",
+        "name": "渾身の斬撃",
+        "cost": 2,
+        "description": "ATK×2.0のダメージを与える。派生スキル「致命の一撃」を次のターンに解放する。",
+        "flavor_text": "重い一撃で体勢を崩す。次の一撃が本命だ。",
+        "unlocks": [
+          {
+            "skillId": "char_fighter_s2_d1",
+            "available": "next_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_fighter_s3",
+        "name": "鉄壁の構え",
+        "cost": 2,
+        "description": "DEFを2ターンの間50%上昇させる。次のターンまで受けるダメージを30%軽減する。",
+        "flavor_text": "大剣を盾のように構え、迫り来る脅威に備える。",
+        "unlocks": []
+      }
+    ],
+    "derived_skills": [
+      {
+        "id": "char_fighter_s1_d1",
+        "name": "連撃",
+        "cost": 1,
+        "description": "ATK×0.8のダメージを2回与える。",
+        "flavor_text": "「そこだっ！」\n隙を逃さず、怒涛の連続攻撃を叩き込む。",
+        "unlocked_by": "char_fighter_s1",
+        "available": "same_turn"
+      },
+      {
+        "id": "char_fighter_s2_d1",
+        "name": "致命の一撃",
+        "cost": 2,
+        "description": "ATK×2.5のダメージを与える。相手のDEFを無視する。",
+        "flavor_text": "「これで終わりだ……灰燼に帰せ！！」\n防御ごと焼き斬る、炎の剣士の奥義。",
+        "unlocked_by": "char_fighter_s2",
+        "available": "next_turn"
+      }
+    ]
+  },
+  {
+    "id": "char_mage",
+    "name": "氷の魔導士",
+    "element": "water",
+    "hp": 850,
+    "atk": 140,
+    "def": 45,
+    "custom_resources": [
+      {
+        "id": "mana",
+        "name": "マナ",
+        "initial_value": 0,
+        "min": 0,
+        "max": 10,
+        "display": "stack"
+      }
+    ],
+    "passives": [
+      {
+        "id": "char_mage_passive_mana_regen",
+        "name": "魔力回復",
+        "trigger": "on_turn_start",
+        "description": "自分のターン開始時、マナを2得る（最大10）。"
+      },
+      {
+        "id": "char_mage_passive_mana_bonus",
+        "name": "魔力増幅",
+        "trigger": "passive_while_active",
+        "description": "マナを1以上保持している場合、ATKがマナ×3%上昇する。"
+      }
+    ],
+    "skills": [
+      {
+        "id": "char_mage_s1",
+        "name": "アイススパイク",
+        "cost": 1,
+        "description": "ATK×0.9のダメージを与える。マナを1得る。派生スキル『アイスストーム』をこのターン内に解放する。",
+        "unlocks": [
+          {
+            "skillId": "char_mage_s1_d1",
+            "available": "same_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_mage_s2",
+        "name": "フロストバリア",
+        "cost": 2,
+        "description": "DEFを2ターンの間30%上昇させる。マナを2得る。派生スキル『絶対零度』を次のターンに解放する。",
+        "unlocks": [
+          {
+            "skillId": "char_mage_s2_d1",
+            "available": "next_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_mage_s3",
+        "name": "マナバースト",
+        "cost": 2,
+        "description": "マナをすべて消費し、ATK×（0.8+消費したマナ×0.15）のダメージを与える。マナを消費しない場合、効果なし。",
+        "unlocks": []
+      },
+      {
+        "id": "char_mage_s4",
+        "name": "ヒーリング",
+        "cost": 2,
+        "description": "マナを2消費し、自身のHPを最大HPの30%回復する。マナが2未満の場合、効果なし。",
+        "unlocks": []
+      }
+    ],
+    "derived_skills": [
+      {
+        "id": "char_mage_s1_d1",
+        "name": "アイスストーム",
+        "cost": 1,
+        "description": "ATK×0.6のダメージを2回与える。マナを1得る。",
+        "unlocked_by": "char_mage_s1",
+        "available": "same_turn"
+      },
+      {
+        "id": "char_mage_s2_d1",
+        "name": "絶対零度",
+        "cost": 2,
+        "description": "ATK×1.2のダメージを与え、相手のATKを2ターンの間15%低下させる。マナを2得る。",
+        "unlocked_by": "char_mage_s2",
+        "available": "next_turn"
+      }
+    ]
+  },
+  {
+    "id": "char_chrono_witch",
+    "name": "時詠みの魔女",
+    "element": "dark",
+    "hp": 900,
+    "atk": 115,
+    "def": 45,
+    "custom_resources": [
+      {
+        "id": "clock_hand",
+        "name": "時計針",
+        "initial_value": 0,
+        "min": 0,
+        "max": 12,
+        "display": "stack"
+      },
+      {
+        "id": "clock_cycle",
+        "name": "時計の一循",
+        "initial_value": 0,
+        "min": 0,
+        "max": 99,
+        "display": "stack"
+      }
+    ],
+    "passives": [
+      {
+        "id": "char_chrono_witch_passive_turn_start",
+        "name": "時の刻印",
+        "trigger": "on_turn_start",
+        "description": "自分のターン開始時、時計針の現在値に応じて効果を発動する。0-2: 時計針+1、3-5: ATK+10%(1T)、6-8: DEF+15%(1T)、9-12: 時計針+2。時計の一循1につき、ATKとDEFが3%上昇する（永続）。"
+      },
+      {
+        "id": "char_chrono_witch_passive_cycle",
+        "name": "一巡の刻",
+        "trigger": "passive_while_active",
+        "description": "時計針が12の状態でさらに増加する場合、時計の一循を1得て、時計針を0に初期化する。"
+      },
+      {
+        "id": "char_chrono_witch_passive_ally_death",
+        "name": "逆行",
+        "trigger": "on_ally_death",
+        "description": "味方が死亡した時、時計針を4増加させ、自分のHPを25%回復する。"
+      },
+      {
+        "id": "char_chrono_witch_passive_while_active",
+        "name": "永劫",
+        "trigger": "passive_while_active",
+        "description": "場に出ている間、自分がダメージを与えるたびに時計針を1増加させる（最大12）。"
+      }
+    ],
+    "skills": [
+      {
+        "id": "char_chrono_witch_s1",
+        "name": "時の刻み",
+        "cost": 1,
+        "description": "ATK×1.0のダメージを与える。時計針を1増加させる。派生スキル「時の加速」「時の逆流」をこのターン内に解放する。",
+        "unlocks": [
+          {
+            "skillId": "char_chrono_witch_s1_d1",
+            "available": "same_turn"
+          },
+          {
+            "skillId": "char_chrono_witch_s1_d2",
+            "available": "same_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_chrono_witch_s2",
+        "name": "時間停止",
+        "cost": 2,
+        "description": "ATK×1.5のダメージを与える。時計針を2消費するたびに、ダメージ倍率が+0.5上昇する（最大消費4でATK×3.5）。派生スキル「時空断裂」をこのターン内に解放する。",
+        "unlocks": [
+          {
+            "skillId": "char_chrono_witch_s2_d1",
+            "available": "same_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_chrono_witch_s3",
+        "name": "因果律操作",
+        "cost": 1,
+        "description": "時計針を3消費して、自分のHPを最大HPの20%回復し、ATKを2ターンの間25%上昇させる。時計針が不足している場合、消費できる分だけ効果を発動する。"
+      }
+    ],
+    "derived_skills": [
+      {
+        "id": "char_chrono_witch_s1_d1",
+        "name": "時の加速",
+        "cost": 1,
+        "description": "時計針を5消費して、残コストを2回復する。このターン中、自分の優先度を2上昇させる。",
+        "unlocked_by": "char_chrono_witch_s1",
+        "available": "same_turn"
+      },
+      {
+        "id": "char_chrono_witch_s1_d2",
+        "name": "時の逆流",
+        "cost": 1,
+        "description": "時計針を2消費して、自分のHPを最大HPの15%回復する。時計針が不足している場合、消費できる分だけ回復する。",
+        "unlocked_by": "char_chrono_witch_s1",
+        "available": "same_turn"
+      },
+      {
+        "id": "char_chrono_witch_s2_d1",
+        "name": "時空断裂",
+        "cost": 1,
+        "description": "時計針を4消費して、ATK×2.0のダメージを与え、相手の優先度を-5にする。時計針が不足している場合、ダメージ倍率が低下する（消費数×0.5倍率）。",
+        "unlocked_by": "char_chrono_witch_s2",
+        "available": "same_turn"
+      }
+    ]
+  },
+  {
+    "id": "char_epp",
+    "name": "E-P-P",
+    "element": "none",
+    "hp": 1100,
+    "atk": 100,
+    "def": 50,
+    "custom_resources": [
+      {
+        "id": "suppression_platoon",
+        "name": "制圧小隊",
+        "initial_value": 0,
+        "min": 0,
+        "max": 10,
+        "display": "stack"
+      },
+      {
+        "id": "assault_platoon",
+        "name": "突撃小隊",
+        "initial_value": 0,
+        "min": 0,
+        "max": 10,
+        "display": "stack"
+      }
+    ],
+    "passives": [
+      {
+        "id": "epp_passive_1",
+        "name": "永続増殖",
+        "trigger": "on_turn_start",
+        "description": "自分のターン開始時、現在HPを110で割った数（切り捨て）だけ制圧小隊を得る（最大10）。突撃小隊を1以上保持しているなら、代わりに突撃小隊を得る。"
+      },
+      {
+        "id": "epp_passive_2",
+        "name": "小隊展開",
+        "trigger": "on_skill_used",
+        "description": "スキル使用時、制圧小隊の数だけそのスキルの効果を再使用する。突撃小隊を保持している場合は（突撃小隊-2）回再使用する（0以下なら再使用なし）。突撃小隊×5だけATKが上昇する（常時）。ログには再使用後の合計値が表示される。"
+      },
+      {
+        "id": "epp_passive_3",
+        "name": "無謀な指揮官",
+        "trigger": "on_self_death",
+        "description": "自分が死亡した時、場に出ている相手にそのキャラのMaxHPの45%のダメージを与える。さらに控えを含むその他すべてのキャラクター（味方・敵問わず）に、それぞれのMaxHPの5%のダメージを与える。"
+      }
+    ],
+    "skills": [
+      {
+        "id": "epp_skill_1",
+        "name": "射撃用意",
+        "cost": 1,
+        "description": "所持している制圧小隊（突撃小隊を1以上保持しているなら突撃小隊）を+1する。このターン終了時にその+1分を差し引く。派生スキル『epp_skill_d1』『epp_skill_d2』をこのターン内に解放する。",
+        "unlocks": [
+          {
+            "skillId": "epp_skill_d1",
+            "available": "same_turn"
+          },
+          {
+            "skillId": "epp_skill_d2",
+            "available": "same_turn"
+          }
+        ]
+      },
+      {
+        "id": "epp_skill_2",
+        "name": "応急処置",
+        "cost": 2,
+        "description": "現在の制圧小隊（突撃小隊を1以上保持しているなら突撃小隊）の数×65のHPを回復する。小隊を保持していない場合、効果なし。",
+        "unlocks": []
+      },
+      {
+        "id": "epp_skill_3",
+        "name": "集中砲火",
+        "cost": 2,
+        "description": "制圧小隊保持時：ATK×0.25のダメージ（再使用適用）。初回トリガーのみ相手DEFを2ターン15%低下させる。突撃小隊保持時：ATK×0.35のダメージ（再使用適用）。",
+        "unlocks": []
+      },
+      {
+        "id": "epp_skill_4",
+        "name": "戦術変更",
+        "cost": 1,
+        "description": "制圧小隊をすべて突撃小隊に変換する（最大10）。制圧小隊が0の場合は代わりに突撃小隊をすべて制圧小隊に変換する。このスキルは再使用の対象外。次のターンATKが5%上昇。",
+        "unlocks": []
+      },
+      {
+        "id": "epp_skill_5",
+        "name": "全力突撃",
+        "cost": 3,
+        "description": "突撃小隊が3以上の時のみ使用可能。突撃小隊をすべて消費し、ATK×（消費した突撃小隊の数×0.4）の単発ダメージを与える（DEF30%無視・再使用なし）。使用後は突撃小隊が0になるため次のターン開始時から制圧小隊を獲得する。",
+        "unlocks": []
+      },
+      {
+        "id": "epp_skill_6",
+        "name": "塹壕構築",
+        "cost": 1,
+        "description": "2ターン間、自分への被ダメージを20%軽減するバフを得る。さらに次の自分のターン開始時、通常の小隊獲得に加えて制圧小隊（突撃小隊を1以上保持しているなら突撃小隊）を追加で+3する。",
+        "unlocks": []
+      }
+    ],
+    "derived_skills": [
+      {
+        "id": "epp_skill_d1",
+        "name": "牽制射撃",
+        "cost": 0,
+        "description": "制圧小隊保持時：ATK×0.17のダメージ（再使用適用）。各トリガーごとに相手ATKを5%低下させるデバフを付与する（最大3スタック）。突撃小隊保持時：ATK×0.25のダメージ（再使用適用）、DEF20%無視。",
+        "unlocked_by": "epp_skill_1",
+        "available": "same_turn"
+      },
+      {
+        "id": "epp_skill_d2",
+        "name": "制圧射撃",
+        "cost": 1,
+        "description": "制圧小隊保持時：ATK×0.22のダメージ（再使用適用）。各トリガーごとに20ダメージ×2ターンのDoTを付与する（最大3スタック、スタックしても継続ターン数は増えない）。突撃小隊保持時：ATK×0.40のダメージ（再使用適用）。",
+        "unlocked_by": "epp_skill_1",
+        "available": "same_turn"
+      }
+    ]
+  },
+  {
+    "id": "char_pyro_test_subject",
+    "name": "炎射被験体2-β-r",
+    "element": "fire",
+    "hp": 1050,
+    "atk": 115,
+    "def": 55,
+    "custom_resources": [
+      {
+        "id": "heat",
+        "name": "熱量",
+        "initial_value": 0,
+        "min": 0,
+        "max": 100,
+        "display": "stack"
+      }
+    ],
+    "passives": [
+      {
+        "id": "char_pyro_passive_burn_bonus",
+        "name": "火傷増幅",
+        "trigger": "passive_while_active",
+        "description": "対象の火傷1につき、与ダメージが0.8%上昇する。"
+      },
+      {
+        "id": "char_pyro_passive_burn_immune",
+        "name": "火傷耐性",
+        "trigger": "passive_while_active",
+        "description": "火傷によるダメージを受けない。"
+      },
+      {
+        "id": "char_pyro_passive_hp_conditional",
+        "name": "実験体の反応",
+        "trigger": "passive_while_active",
+        "description": "HPが70%以上の場合、付与する火傷の値+5。HPが50-70%の場合、+2。HPが50%以下の場合、-2。"
+      },
+      {
+        "id": "char_pyro_passive_heat_50",
+        "name": "熱量加速",
+        "trigger": "on_turn_start",
+        "description": "熱量が50以上の場合、ターン開始時、場に出ている敵の火傷+3。"
+      },
+      {
+        "id": "char_pyro_passive_heat_80",
+        "name": "過熱状態",
+        "trigger": "passive_while_active",
+        "description": "熱量が80以上の場合、与ダメージ+20%。"
+      },
+      {
+        "id": "char_pyro_passive_overheat",
+        "name": "熱暴走",
+        "trigger": "on_turn_start",
+        "description": "熱量が90以上の場合、ターン開始時、自身のHP-5%。"
+      },
+      {
+        "id": "char_pyro_passive_burn_15",
+        "name": "炎の浸透",
+        "trigger": "on_turn_start",
+        "description": "場に出ている敵の火傷が15以上の場合、ターン開始時、敵の火傷+3。"
+      },
+      {
+        "id": "char_pyro_passive_burn_30",
+        "name": "炎の猛威",
+        "trigger": "passive_while_active",
+        "description": "火傷が30以上の敵に対する与ダメージ+15%。"
+      }
+    ],
+    "skills": [
+      {
+        "id": "char_pyro_s1",
+        "name": "炎の爪痕",
+        "cost": 1,
+        "description": "ATK×1.2のダメージを与える。火傷8+熱量/10（切り捨て）を付与する。熱量+15。派生スキル「熱波放出」をこのターン内に解放する。",
+        "unlocks": [
+          {
+            "skillId": "char_pyro_s1_d1",
+            "available": "same_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_pyro_s2",
+        "name": "拡散熱源",
+        "cost": 1,
+        "description": "ATK×1.0のダメージを与える。火傷12を付与する。相手の控えランダム1名にも火傷6を付与する。熱量+20。派生スキル「集中熱線」をこのターン内に解放する。",
+        "unlocks": [
+          {
+            "skillId": "char_pyro_s2_d1",
+            "available": "same_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_pyro_s3",
+        "name": "冷却循環",
+        "cost": 2,
+        "description": "敵の火傷のみをすべて消滅させる。消滅させた値×2だけ自身のHPを回復する。熱量-30。",
+        "unlocks": []
+      },
+      {
+        "id": "char_pyro_s4",
+        "name": "熱暴走",
+        "cost": 2,
+        "description": "ATK×1.2のダメージを与える。火傷25+熱量/5（切り捨て）を付与する。熱量+30。派生スキル「臨界突破」をこのターン内に解放する。",
+        "unlocks": [
+          {
+            "skillId": "char_pyro_s4_d1",
+            "available": "same_turn"
+          }
+        ]
+      }
+    ],
+    "derived_skills": [
+      {
+        "id": "char_pyro_s1_d1",
+        "name": "熱波放出",
+        "cost": 1,
+        "description": "ATK×0.8のダメージを与える。火傷5+熱量/15（切り捨て）を付与する。相手のATKを2ターンの間10%低下させる。熱量+10。",
+        "unlocked_by": "char_pyro_s1",
+        "available": "same_turn"
+      },
+      {
+        "id": "char_pyro_s2_d1",
+        "name": "集中熱線",
+        "cost": 2,
+        "description": "ATK×1.3のダメージを与える。火傷15を付与する。相手の優先度を-2にする。相手のDEFを2ターンの間15%低下させる。熱量+25。",
+        "unlocked_by": "char_pyro_s2",
+        "available": "same_turn"
+      },
+      {
+        "id": "char_pyro_s4_d1",
+        "name": "臨界突破",
+        "cost": 3,
+        "description": "熱量をすべて消費する。ATK×1.5のダメージを与える。火傷40+消費熱量/2（切り捨て）を付与する。相手のDEFを30%無視する。",
+        "unlocked_by": "char_pyro_s4",
+        "available": "same_turn"
+      }
+    ]
+  },
+  {
+    "id": "char_loran",
+    "name": "ローラン",
+    "element": "dark",
+    "hp": 1000,
+    "atk": 110,
+    "def": 48,
+    "custom_resources": [
+      {
+        "id": "weapon_mastery_count",
+        "name": "武器習熟カウント",
+        "initial_value": 0,
+        "min": 0,
+        "max": 9,
+        "display": "stack"
+      },
+      {
+        "id": "combo_stacks",
+        "name": "連撃スタック",
+        "initial_value": 0,
+        "min": 0,
+        "max": 5,
+        "display": "stack"
+      }
+    ],
+    "passives": [
+      {
+        "id": "char_loran_passive_mask_normal",
+        "name": "認識阻害の仮面（通常）",
+        "trigger": "passive_while_active",
+        "description": "残りHPが601以上の間、受けるダメージを10%減少させる。"
+      },
+      {
+        "id": "char_loran_passive_mask_awakened",
+        "name": "認識阻害の仮面（覚醒）",
+        "trigger": "passive_while_active",
+        "description": "残りHPが600以下になった時、攻撃力が1.1倍になり、受けるダメージが15%増加する。"
+      },
+      {
+        "id": "char_loran_passive_combo",
+        "name": "連撃の軌跡",
+        "trigger": "on_skill_used",
+        "description": "同じターン内でスキルを連続して使用するたび、そのターン中のみ攻撃力が10%ずつ上昇する（最大5回、+50%まで）。ターン終了時にリセット。"
+      }
+    ],
+    "skills": [
+      {
+        "id": "char_loran_s1_durandal",
+        "name": "デュランダル",
+        "cost": 2,
+        "description": "ATK×0.7のダメージを与える。攻撃が的中すると次のターンの攻撃力を15%上昇させる。武器習熟カウントが1増加（初回のみ）。派生スキル『老いた少年工房』をこのターン内に解放する。",
+        "unlocks": [
+          {
+            "skillId": "char_loran_s1_d1_old_boy",
+            "available": "same_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_loran_s2_logic_atelier",
+        "name": "ロジックアトリエ",
+        "cost": 1,
+        "description": "ATK×0.9のダメージを与える。武器習熟カウントが1増加（初回のみ）。派生スキル『クリスタルアトリエ』を次のターンに解放する。",
+        "unlocks": [
+          {
+            "skillId": "char_loran_s2_d1_crystal_atelier",
+            "available": "next_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_loran_s3_aras",
+        "name": "アラス工房",
+        "cost": 2,
+        "description": "ATK×0.8のダメージを与える。このターン中に相手が受けるダメージを15%増加させる。武器習熟カウントが1増加（初回のみ）。",
+        "unlocks": []
+      },
+      {
+        "id": "char_loran_s4_keyaki",
+        "name": "ケヤキ工房",
+        "cost": 0,
+        "description": "ATK×0.6のダメージを与える。コストを消費しない。【1ターンに1回のみ使用可能】武器習熟カウントが1増加（初回のみ）。",
+        "unlocks": []
+      },
+      {
+        "id": "char_loran_s5_wolf_fang",
+        "name": "狼牙工房",
+        "cost": 0,
+        "description": "ATK×0.6のダメージを与える。コストを消費しない。【1ターンに1回のみ使用可能】武器習熟カウントが1増加（初回のみ）。",
+        "unlocks": []
+      }
+    ],
+    "derived_skills": [
+      {
+        "id": "char_loran_s1_d1_old_boy",
+        "name": "老いた少年工房",
+        "cost": 1,
+        "description": "ATK×0.7のダメージを与える。使用時に残りのコストが1回復する。的中時、自身のHPを50回復する。武器習熟カウントが1増加（初回のみ）。派生スキル『ムク工房』をこのターン内に解放する。",
+        "unlocked_by": "char_loran_s1_durandal",
+        "available": "same_turn",
+        "unlocks": [
+          {
+            "skillId": "char_loran_s1_d2_muku",
+            "available": "same_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_loran_s1_d2_muku",
+        "name": "ムク工房",
+        "cost": 1,
+        "description": "ATK×0.7のダメージを与える。使用時に残りのコストが1回復する。的中時、相手に追加固定40ダメージを与える。武器習熟カウントが1増加（初回のみ）。",
+        "unlocked_by": "char_loran_s1_d1_old_boy",
+        "available": "same_turn"
+      },
+      {
+        "id": "char_loran_s2_d1_crystal_atelier",
+        "name": "クリスタルアトリエ",
+        "cost": 3,
+        "description": "ATK×1.54のダメージを与える（4連撃）。武器習熟カウントが1増加（初回のみ）。派生スキル『ホイールズ・インダストリー』を次のターンに解放する。",
+        "unlocked_by": "char_loran_s2_logic_atelier",
+        "available": "next_turn",
+        "unlocks": [
+          {
+            "skillId": "char_loran_s2_d2_wheels_industry",
+            "available": "next_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_loran_s2_d2_wheels_industry",
+        "name": "ホイールズ・インダストリー",
+        "cost": 3,
+        "description": "ATK×1.7のダメージを与える。的中時に相手は怯み、次のターンの相手の攻撃力が7.5%減少する。武器習熟カウントが1増加（初回のみ）。",
+        "unlocked_by": "char_loran_s2_d1_crystal_atelier",
+        "available": "next_turn"
+      },
+      {
+        "id": "char_loran_ultimate_furioso",
+        "name": "Furioso",
+        "cost": 3,
+        "description": "武器習熟カウントが9に達した時のみ使用可能。相手のバフや防御効果をすべて無視してATK×3.5のダメージを与える。相手の次のターン攻撃力が10%減少する。使用後、武器習熟カウントが0にリセットされる。",
+        "unlocked_by": "char_loran_mastery_complete",
+        "available": "permanent"
+      }
+    ]
+  },
+  {
+    "id": "char_indicate",
+    "name": "インディケイト",
+    "element": "grass",
+    "hp": 1050,
+    "atk": 105,
+    "def": 55,
+    "custom_resources": [
+      {
+        "id": "current_weapon",
+        "name": "現在の武器",
+        "initial_value": 0,
+        "min": 0,
+        "max": 4,
+        "display": "stack"
+      },
+      {
+        "id": "s1_usage_count",
+        "name": "S1使用回数",
+        "initial_value": 0,
+        "min": 0,
+        "max": 99,
+        "display": "stack"
+      }
+    ],
+    "passives": [
+      {
+        "id": "char_indicate_passive_weapon_effects",
+        "name": "武器庫",
+        "trigger": "passive_always",
+        "description": "各武器の性能一覧：\n・ハンドガン：ATK×1.3の1回攻撃。\n・アサルトライフル：ATK×0.3の4回攻撃（各ヒットごとにダメージ計算、DEF80%無視）。\n・ロケットランチャー：ATK×1.6の1回攻撃、相手DEFを2ターン10%低下。\n・サブマシンガン：ATK×0.2の6回攻撃（各ヒットごとにダメージ計算、DEF無視）。\n・銃剣：ATK×1.25の1回攻撃、相手HPが最大値の50%以下なら再度攻撃。"
+      },
+      {
+        "id": "char_indicate_passive_weapon_cycle",
+        "name": "持ちきれない荷物",
+        "trigger": "on_turn_start",
+        "description": "毎ターン開始時、次の武器に持ち替える。"
+      },
+      {
+        "id": "char_indicate_passive_rocket_weight",
+        "name": "重量制限",
+        "trigger": "on_skill_used",
+        "description": "ロケットランチャーを使用した際、次の武器に自動で持ち替える（S3と重複して発動しない）。"
+      }
+    ],
+    "skills": [
+      {
+        "id": "char_indicate_s1_fire",
+        "name": "射撃",
+        "cost": 1,
+        "description": "所持している武器で攻撃する。このスキルの当ターン使用数一回につき、与えるダメージが15%減少する。",
+        "unlocks": []
+      },
+      {
+        "id": "char_indicate_s2_sweep",
+        "name": "掃討射撃",
+        "cost": 2,
+        "description": "所持している武器で敵控えを含む全体を攻撃する。控えに対しては最終ダメージ-60%。",
+        "unlocks": []
+      },
+      {
+        "id": "char_indicate_s3_barrage",
+        "name": "大乱射",
+        "cost": 3,
+        "description": "所持している武器で攻撃後、次の武器に持ち替えて再度攻撃する。持ち替えた先の武器が連射武器ならば、その武器によるダメージを30%減らし、もう一方の連射武器で攻撃し、その武器に持ち替える。",
+        "unlocks": []
+      },
+      {
+        "id": "char_indicate_s4_switch",
+        "name": "持ち替え",
+        "cost": 1,
+        "description": "武器を持ち替え、持ち替えた武器で攻撃する。与えるダメージが40%減少する。",
+        "unlocks": [
+          {
+            "skillId": "char_indicate_s4_1_adjust",
+            "available": "same_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_indicate_s5_random",
+        "name": "次は何が出るかな？",
+        "cost": 2,
+        "description": "ランダムな武器で攻撃し、その武器に持ち替える。このダメージ+10%。",
+        "unlocks": []
+      }
+    ],
+    "derived_skills": [
+      {
+        "id": "char_indicate_s4_1_adjust",
+        "name": "体勢修正",
+        "cost": 1,
+        "description": "HPを最大値の15%回復、2ターンの間、DEFを10%上昇させる。",
+        "unlocked_by": "char_indicate_s4_switch",
+        "available": "same_turn"
+      }
+    ]
+  },
+  {
+    "id": "char_priest",
+    "name": "神父",
+    "element": "light",
+    "hp": 800,
+    "atk": 102,
+    "def": 0,
+    "flavor_text": "神の代行者を名乗る男。",
+    "custom_resources": [
+      {
+        "id": "sin",
+        "name": "罪",
+        "initial_value": 0,
+        "min": 0,
+        "max": 1000,
+        "display": "gauge"
+      }
+    ],
+    "passives": [
+      {
+        "id": "char_priest_passive_protection",
+        "name": "加護？",
+        "trigger": "on_turn_start",
+        "description": "自身のターン開始時、最大HPの5%回復する。",
+        "flavor_text": "信仰するものに等しく注がれる愛。それを独占したいと思うのもまた人間の性"
+      },
+      {
+        "id": "char_priest_passive_godslayer",
+        "name": "神殺し",
+        "trigger": "passive_while_active",
+        "description": "常時受けるダメージを20固定値で減少させる。"
+      },
+      {
+        "id": "char_priest_passive_condemnation",
+        "name": "断罪",
+        "trigger": "on_turn_end",
+        "description": "固有リソース「罪」(最大値1000)を持つ。相手から受けたダメージを罪に加算する。罪/10だけ与えるダメージが固定値で加算される。",
+        "flavor_text": "「罪を償う時だ」"
+      },
+      {
+        "id": "char_priest_passive_god",
+        "name": "神",
+        "trigger": "on_death",
+        "description": "死亡時に発動。パッシブ「加護？」、「神殺し」を無効化。全てのバフ、デバフを除去し、受け付けなくなる。HP最大値を500に設定、atkを0に設定し、S2,3,4を変更。キャラクター名を「神」に変更。属性を無に変更。変化後3ターン目終了時に死亡する。このキャラクターの死亡時、味方全体に100ダメージ。このキャラクターは蘇生効果を受け付けない。"
+      }
+    ],
+    "skills": [
+      {
+        "id": "char_priest_s1_combo",
+        "name": "連撃",
+        "cost": 0,
+        "description": "10の固定ダメージを与える。パッシブ「断罪」で与える固定ダメージが20%増加。【1ターンに2回使用可能】",
+        "flavor_text": "「この程度か？」",
+        "unlocks": [],
+        "max_uses_per_turn": 2
+      },
+      {
+        "id": "char_priest_s2_punishment_proxy",
+        "name": "神罰-代行",
+        "cost": 1,
+        "description": "この攻撃は闇属性として扱われる。ATK×1.0ダメージ。",
+        "flavor_text": "「我、代行者故に」",
+        "unlocks": []
+      },
+      {
+        "id": "char_priest_s3_to_where_it_belongs",
+        "name": "あるべきところへ",
+        "cost": 2,
+        "description": "ATK×1.2ダメージ。次のターン、相手のATKを10%上昇させる。相手の次に受けるダメージ+25%。",
+        "flavor_text": "「ただ還すのみ」",
+        "unlocks": []
+      },
+      {
+        "id": "char_priest_s4_liquidation",
+        "name": "精算",
+        "cost": 3,
+        "description": "ATK×1.5ダメージ。罪を100増加させる。HPを最大値の10%回復する。",
+        "flavor_text": "「私の罪を」",
+        "unlocks": []
+      }
+    ],
+    "derived_skills": [
+      {
+        "id": "char_priest_s2_god_punishment",
+        "name": "神罰",
+        "cost": 3,
+        "description": "相手の最大HPの50%ダメージ。",
+        "unlocked_by": "char_priest_passive_god",
+        "available": "permanent"
+      },
+      {
+        "id": "char_priest_s3_reduction",
+        "name": "還元",
+        "cost": 2,
+        "description": "罪を全て消耗し、消耗した数値だけダメージ。与えたダメージが400以下なら、与えたダメージの30%を再度与える。",
+        "unlocked_by": "char_priest_passive_god",
+        "available": "permanent"
+      },
+      {
+        "id": "char_priest_s4_incomplete",
+        "name": "不完全",
+        "cost": 1,
+        "description": "神のパッシブを無効化し、神父の状態に戻る。HPは最大値の50%となる。このスキル発動後、神のパッシブによる復活効果は無効化され、ターン終了。",
+        "unlocked_by": "char_priest_passive_god",
+        "available": "permanent"
+      }
+    ]
+  },
+  {
+    "id": "char_shin",
+    "name": "シン",
+    "element": "light",
+    "hp": 1200,
+    "atk": 85,
+    "def": 55,
+    "flavor_text": "符術の天才。手元に集まる霊生護符を操り、陣を完成させる。",
+    "custom_resources": [
+      {
+        "id": "talisman",
+        "name": "霊生護符",
+        "initial_value": 0,
+        "min": 0,
+        "max": 6,
+        "display": "stack"
+      }
+    ],
+    "passives": [
+      {
+        "id": "char_shin_passive_buff",
+        "name": "符術の陣",
+        "trigger": "passive_while_active",
+        "description": "手元にある護符の数が多ければ多いほど、味方全員の攻撃力（ATK）が常時上昇する。\n2-3枚: 5%上昇 / 4-5枚: 10%上昇 / 6枚: 15%上昇"
+      },
+      {
+        "id": "char_shin_passive_protection",
+        "name": "神仙の加護",
+        "trigger": "on_hp_threshold",
+        "description": "自身の残りHPが500以下になった瞬間、一度だけ霊生護符が「3枚」即座に手元に集まる。"
+      },
+      {
+        "id": "char_shin_passive_meditation",
+        "name": "後方での調息",
+        "trigger": "on_turn_end",
+        "description": "控え（裏）にいる間、2ターンが経過するたびに、霊生護符が自動で「1枚」増加する（上限6枚）。"
+      }
+    ],
+    "skills": [
+      {
+        "id": "char_shin_s1_light_wave",
+        "name": "光波符",
+        "cost": 1,
+        "description": "相手にダメージ（ATK×0.65）を与える。霊生護符が1枚集まる。",
+        "unlocks": []
+      },
+      {
+        "id": "char_shin_s2_five_elements",
+        "name": "五行加護陣",
+        "cost": 2,
+        "description": "相手にダメージ（ATK×1.0）を与え、次のターンに受けるダメージを15%減少させる結界を自分に付与。霊生護符が3枚集まる。",
+        "unlocks": []
+      },
+      {
+        "id": "char_shin_s3_gathering",
+        "name": "聚気法",
+        "cost": 1,
+        "description": "攻撃を行わない。次のターンの自身の防御力を15%上昇させる。霊生護符が2枚集まる。",
+        "unlocks": []
+      },
+      {
+        "id": "char_shin_s4_aurora",
+        "name": "帰命頂礼・極光破",
+        "cost": 3,
+        "description": "【発動条件:護符3枚以上】相手にダメージ（ATK×1.5）を与え、味方全体のHPを130回復する。護符をすべて消費する。",
+        "unlocks": []
+      }
+    ],
+    "derived_skills": []
+  },
+  {
+    "id": "char_deal",
+    "name": "ジョーカー・ディール",
+    "element": "none",
+    "hp": 1050,
+    "atk": 108,
+    "def": 52,
+    "custom_resources": [
+      {
+        "id": "hand_cards",
+        "name": "手札",
+        "initial_value": 0,
+        "min": 0,
+        "max": 999999,
+        "display": "stack"
+      },
+      {
+        "id": "redraw_count",
+        "name": "引き直し",
+        "initial_value": 1,
+        "min": 0,
+        "max": 3,
+        "display": "stack"
+      }
+    ],
+    "passives": [
+      {
+        "id": "char_deal_passive_turn_start",
+        "name": "ターン開始時ドロー",
+        "trigger": "on_turn_start",
+        "description": "ターン開始時、手札を3枚ランダムで引く。redraw_countを1にリセットする。"
+      },
+      {
+        "id": "char_deal_passive_showdown",
+        "name": "ショウダウン",
+        "trigger": "on_turn_end",
+        "description": "ターン終了時、現在の手札で成立する全ての役の効果を発動する（回復上限は最大HPの25%）。\n\n【成立する役の一覧と効果】\n◆ストレートフラッシュ（連続する数字＋同色）\n：敵にATK×1.5ダメージ、敵控え全員にATK×0.75ダメージ、味方全体HP8%回復\n\n◆スリーカード（同数字3枚）\n：敵にATK×2.0ダメージ\n\n◆ストレート（連続する数字）\n：敵にATK×1.2ダメージ、自身は控えに戻る（スイッチアウト）\n\n◆フラッシュ（同色3枚）\n・赤：敵にATK×1.5ダメージ\n・青：敵のATK・DEFを2ターンの間10%低下\n・緑：自身のHPを20%回復\n\n◆レインボー（3色すべて異なる）\n：自身のATK・DEFを2ターンの間10%上昇、自身のHPを10%回復\n\n◆ワンペア（同数字2枚・含まれる全色で発動）\n・赤：敵にATK×0.8ダメージ\n・青：敵のATK・DEFを1ターンの間5%低下\n・緑：自身のHPを10%回復\n\n◆ブタ（役なし）\n：次のターンの引き直し回数を+1する"
+      }
+    ],
+    "skills": [
+      {
+        "id": "char_deal_s1_draw",
+        "name": "ドロー",
+        "cost": 1,
+        "description": "使用回数はredraw_countに依存（デフォルト1回、最大3回）。使用すると派生スキル「赤を引く」「青を引く」「緑を引く」を解放する。派生を1つ使用した瞬間、残りの派生は消滅する。",
+        "unlocks": [
+          {
+            "skillId": "char_deal_s1_d1_red",
+            "available": "same_turn"
+          },
+          {
+            "skillId": "char_deal_s1_d2_blue",
+            "available": "same_turn"
+          },
+          {
+            "skillId": "char_deal_s1_d3_green",
+            "available": "same_turn"
+          }
+        ]
+      },
+      {
+        "id": "char_deal_s2_redraw_all",
+        "name": "全替え",
+        "cost": 2,
+        "description": "手札3枚を全てランダムで引き直す。ATK×0.6のダメージを与える。",
+        "unlocks": []
+      },
+      {
+        "id": "char_deal_s3_bet",
+        "name": "ベット",
+        "cost": 2,
+        "description": "ATK×1.45のダメージを与える。",
+        "unlocks": []
+      },
+      {
+        "id": "char_deal_s4_bluff",
+        "name": "ブラフ",
+        "cost": 1,
+        "description": "ATKを2ターンの間5%上昇させる。次のターンのredraw_countを+1する（最大3）。",
+        "unlocks": []
+      },
+      {
+        "id": "char_deal_s5_instant_showdown",
+        "name": "インスタントショウダウン",
+        "cost": 3,
+        "description": "現在の手札で即時役判定を行い、成立する全ての役の効果を発動する。高位役（ストレート・スリーカード・ストレートフラッシュ）のダメージは25%減。回復上限25%は通常通り適用。",
+        "unlocks": []
+      },
+      {
+        "id": "char_deal_s6_cheating",
+        "name": "イカサマ",
+        "cost": 2,
+        "description": "自身のHP最大値の5%のダメージを受け、ランダムな役を揃える（色や数字もランダム）。\n【出現確率】ワンペア40% / レインボー25% / フラッシュ15% / ストレート10% / スリーカード7% / ストレートフラッシュ2% / ブタ1%",
+        "unlocks": []
+      }
+    ],
+    "derived_skills": [
+      {
+        "id": "char_deal_s1_d1_red",
+        "name": "赤を引く",
+        "cost": 0,
+        "description": "手札から1枚捨てて（優先度: 色が2枚揃っている場合は揃っていない色、それ以外は数字が最小のカード）、赤のカードを1枚ランダムで引く。",
+        "unlocked_by": "char_deal_s1_draw",
+        "available": "same_turn"
+      },
+      {
+        "id": "char_deal_s1_d2_blue",
+        "name": "青を引く",
+        "cost": 0,
+        "description": "手札から1枚捨てて（優先度: 色が2枚揃っている場合は揃っていない色、それ以外は数字が最小のカード）、青のカードを1枚ランダムで引く。",
+        "unlocked_by": "char_deal_s1_draw",
+        "available": "same_turn"
+      },
+      {
+        "id": "char_deal_s1_d3_green",
+        "name": "緑を引く",
+        "cost": 0,
+        "description": "手札から1枚捨てて（優先度: 色が2枚揃っている場合は揃っていない色、それ以外は数字が最小のカード）、緑のカードを1枚ランダムで引く。",
+        "unlocked_by": "char_deal_s1_draw",
+        "available": "same_turn"
+      }
+    ]
+  },
+  {
+    "id": "char_crimson_stalker",
+    "name": "深紅の追跡者",
+    "element": "fire",
+    "hp": 950,
+    "atk": 115,
+    "def": 40,
+    "custom_resources": [
+      {
+        "id": "nemesis_mark_target",
+        "name": "宿敵マーク対象",
+        "initial_value": 0,
+        "min": 0,
+        "max": 999,
+        "display": "stack"
+      },
+      {
+        "id": "frenzy_counter",
+        "name": "狂乱カウンター",
+        "initial_value": 0,
+        "min": 0,
+        "max": 2,
+        "display": "stack"
+      },
+      {
+        "id": "counter_attack_count",
+        "name": "カウンターアタック回数",
+        "initial_value": 0,
+        "min": 0,
+        "max": 2,
+        "display": "stack"
+      }
+    ],
+    "passives": [
+      {
+        "id": "char_crimson_passive_mark_on_battle_start",
+        "name": "不倶戴天のマーク",
+        "trigger": "on_battle_start",
+        "description": "バトル開始時、敵の中からランダムな1人に【宿敵マーク】（永続・解除不可）を付与する。"
+      },
+      {
+        "id": "char_crimson_passive_damage_bonus",
+        "name": "執着の照準",
+        "trigger": "passive_while_active",
+        "description": "【宿敵マーク】がついた敵に対する、自身のすべての攻撃ダメージが+25%される。"
+      },
+      {
+        "id": "char_crimson_passive_counter_attack",
+        "name": "私の視界に入るな",
+        "trigger": "on_ally_skill_damage",
+        "description": "【宿敵マーク】がついている敵に対して、「他の味方」がスキルでダメージを与えたときその味方に、自身の攻撃力の1.0倍のダメージを与える（1ターンにつき2回まで）。【宿敵マーク】のついていない敵への攻撃は、ダメージが50%低下する。"
+      },
+      {
+        "id": "char_crimson_passive_frenzy_trigger",
+        "name": "終焉の狂乱",
+        "trigger": "on_nemesis_death_by_ally",
+        "description": "【宿敵マーク】がついた敵が「他の味方」によって撃破されたときに強制発動。控えにいる場合、生存している前衛の味方1人と入れ替わりで【強制的に表に引き出される】。発動から2ターンの間、このキャラクターは完全に操作不能となり、毎ターン終了時に【控えも含めた敵味方全員】に「攻撃力×1.5」の無差別広域攻撃を行う。2ターン後にショック死する。"
+      },
+      {
+        "id": "char_crimson_passive_frenzy_attack",
+        "name": "狂乱の猛攻",
+        "trigger": "on_turn_end",
+        "description": "狂乱状態中の毎ターン終了時、【控えも含めた敵味方全員】に「攻撃力×1.5」の無差別広域攻撃を行う。"
+      }
+    ],
+    "skills": [
+      {
+        "id": "char_crimson_s1_silver_bullet",
+        "name": "追跡の銀弾",
+        "cost": 1,
+        "description": "相手にダメージ（攻撃力×1.5）を与える。",
+        "unlocks": []
+      },
+      {
+        "id": "char_crimson_s2_scythe",
+        "name": "報復の大鎌",
+        "cost": 2,
+        "description": "相手に大ダメージ（攻撃力×1.9）を与える。",
+        "unlocks": []
+      },
+      {
+        "id": "char_crimson_s3_polish",
+        "name": "復讐の研磨",
+        "cost": 1,
+        "description": "次のターンのみ、自身の攻撃力が15%上昇する。",
+        "unlocks": []
+      }
+    ],
+    "derived_skills": []
+  }
+]
