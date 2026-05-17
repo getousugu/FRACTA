@@ -629,11 +629,11 @@
         "id": "char_pyro_s4",
         "name": "熱暴走",
         "cost": 2,
-        "description": "ATK×1.2のダメージを与える。火傷25+熱量/5（切り捨て）を付与する。熱量+30。派生スキル「臨界突破」をこのターン内に解放する。",
+        "description": "ATK×1.2のダメージを与える。火傷25+熱量/5（切り捨て）を付与する。熱量+30。派生スキル「臨界突破」を次のターンに解放する。",
         "unlocks": [
           {
             "skillId": "char_pyro_s4_d1",
-            "available": "same_turn"
+            "available": "next_turn"
           }
         ]
       }
@@ -661,7 +661,7 @@
         "cost": 3,
         "description": "熱量をすべて消費する。ATK×1.5のダメージを与える。火傷40+消費熱量/2（切り捨て）を付与する。相手のDEFを30%無視する。",
         "unlocked_by": "char_pyro_s4",
-        "available": "same_turn"
+        "available": "next_turn"
       }
     ]
   },
