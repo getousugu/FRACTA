@@ -230,7 +230,7 @@ export default function Battle() {
         {/* 敵チーム（控え） */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
           {battle[enemyTeam].characters.map((c) => (
-            <div style={{ width: 100 }} key={c.id}>
+            <div style={{ width: 140 }} key={c.id}>
               <CharacterCard 
                 char={c} 
                 compact 
@@ -271,7 +271,7 @@ export default function Battle() {
         {/* 味方チーム（控え） */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
           {battle[myTeam].characters.map((c, i) => (
-            <div style={{ width: 100 }} key={c.id}>
+            <div style={{ width: 140 }} key={c.id}>
               <CharacterCard
                 char={c}
                 compact

@@ -58,16 +58,24 @@ export function CharacterCard({
 
   // コンパクト表示（チーム一覧用）
   if (compact) {
+    const isPendingSwitch = detailOpen && !!onClick;
+
     return (
       <div
         className={`card-hover ${isActive ? 'selected' : ''} ${!char.isAlive ? 'opacity-40' : ''}`}
         style={{
           padding: '8px 12px',
           opacity: char.isAlive ? 1 : 0.35,
-          cursor: 'pointer',
+          cursor: onClick && !isActive && char.isAlive ? 'pointer' : 'default',
           position: 'relative',
+          border: isPendingSwitch ? '2px solid var(--accent-gold)' : undefined,
+          boxShadow: isPendingSwitch ? '0 0 10px rgba(240,184,64,0.3)' : undefined,
         }}
-        onClick={handleClick}
+        onClick={() => {
+          if (onClick && !isActive && char.isAlive) {
+            setDetailOpen((prev) => !prev);
+          }
+        }}
       >
         {/* FCT */}
         {fct.map((f) => (
@@ -164,9 +172,34 @@ export function CharacterCard({
             戦闘不能
           </div>
         )}
+        {/* 交代確認ボタン */}
+        {isPendingSwitch && (
+          <button
+            style={{
+              marginTop: 8,
+              width: '100%',
+              padding: '5px 0',
+              background: 'var(--accent-gold)',
+              color: '#000',
+              fontWeight: 700,
+              fontSize: 12,
+              border: 'none',
+              borderRadius: 4,
+              cursor: 'pointer',
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setDetailOpen(false);
+              onClick?.();
+            }}
+          >
+            交代する
+          </button>
+        )}
       </div>
     );
   }
+
 
   // 通常表示（先頭キャラ用）
   return (
