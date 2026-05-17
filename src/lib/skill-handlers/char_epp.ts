@@ -176,37 +176,34 @@ const s3: SkillHandler = (state, actorTeam) => {
   }
 
   let s = state;
-  let totalDmg = 0;
   let defDownApplied = false;
 
-  for (let i = 0; i < 1 + reuseCount; i++) {
-    const currentActor = getActive(s, actorTeam);
-    const currentEnemy = getActive(s, actorTeam === 'team1' ? 'team2' : 'team1');
-    const hitDmg = calcDamage(currentActor, currentEnemy, { multiplier });
-    totalDmg += hitDmg;
-    s = dealDamage(s, actorTeam, hitDmg);
+  const totalHits = 1 + reuseCount;
+  const finalMultiplier = multiplier * totalHits;
 
-    if (suppression > 0) {
-      if (i === 0) {
-        const enemyTeam = actorTeam === 'team1' ? 'team2' : 'team1';
-        s = updateChar(s, enemyTeam, currentEnemy.id, (c) =>
-          applyEffect(c, {
-            id: 'epp_s3_def_down',
-            name: 'DEF低下',
-            category: 'stat',
-            stat: 'def',
-            value: -0.15,
-            mode: 'mul',
-            isStackable: false,
-            turnsRemaining: 2,
-          })
-        );
-        defDownApplied = true;
-      }
-    }
+  const currentActor = getActive(s, actorTeam);
+  const currentEnemy = getActive(s, actorTeam === 'team1' ? 'team2' : 'team1');
+  const totalDmg = calcDamage(currentActor, currentEnemy, { multiplier: finalMultiplier });
+  s = dealDamage(s, actorTeam, totalDmg);
+
+  if (suppression > 0) {
+    const enemyTeam = actorTeam === 'team1' ? 'team2' : 'team1';
+    s = updateChar(s, enemyTeam, currentEnemy.id, (c) =>
+      applyEffect(c, {
+        id: 'epp_s3_def_down',
+        name: 'DEF低下',
+        category: 'stat',
+        stat: 'def',
+        value: -0.15,
+        mode: 'mul',
+        isStackable: false,
+        turnsRemaining: 2,
+      })
+    );
+    defDownApplied = true;
   }
 
-  let logMsg = `${actor.name}の「集中砲火」→ ${enemy.name}に${totalDmg}ダメージ（${1 + reuseCount}Hit）`;
+  let logMsg = `${actor.name}の「集中砲火」→ ${enemy.name}に${totalDmg}ダメージ（${totalHits}Hit分合算）`;
   if (defDownApplied) logMsg += `、DEFが15%低下（2ターン）`;
   s = addLog(s, logMsg);
   return s;
@@ -350,21 +347,22 @@ const s1d1: SkillHandler = (state, actorTeam) => {
   }
 
   let s = state;
-  let totalDmg = 0;
   let stacksAdded = 0;
 
-  for (let i = 0; i < 1 + reuseCount; i++) {
-    const currentActor = getActive(s, actorTeam);
-    const currentEnemy = getActive(s, actorTeam === 'team1' ? 'team2' : 'team1');
-    const hitDmg = calcDamage(currentActor, currentEnemy, { multiplier, defIgnore });
-    totalDmg += hitDmg;
-    s = dealDamage(s, actorTeam, hitDmg);
+  const totalHits = 1 + reuseCount;
+  const finalMultiplier = multiplier * totalHits;
 
-    if (suppression > 0) {
-      const updatedEnemy = getActive(s, actorTeam === 'team1' ? 'team2' : 'team1');
+  const currentActor = getActive(s, actorTeam);
+  const currentEnemy = getActive(s, actorTeam === 'team1' ? 'team2' : 'team1');
+  const totalDmg = calcDamage(currentActor, currentEnemy, { multiplier: finalMultiplier, defIgnore });
+  s = dealDamage(s, actorTeam, totalDmg);
+
+  if (suppression > 0) {
+    const enemyTeam = actorTeam === 'team1' ? 'team2' : 'team1';
+    for (let i = 0; i < totalHits; i++) {
+      const updatedEnemy = getActive(s, enemyTeam);
       const currentStacks = updatedEnemy.effects.find((e) => e.id === 'epp_d1_atk_down')?.currentStacks ?? 0;
       if (currentStacks < 3) {
-        const enemyTeam = actorTeam === 'team1' ? 'team2' : 'team1';
         s = updateChar(s, enemyTeam, updatedEnemy.id, (c) =>
           applyEffect(c, {
             id: 'epp_d1_atk_down',
@@ -383,7 +381,7 @@ const s1d1: SkillHandler = (state, actorTeam) => {
     }
   }
 
-  let logMsg = `${actor.name}の「牽制射撃」→ ${enemy.name}に${totalDmg}ダメージ（${1 + reuseCount}Hit）`;
+  let logMsg = `${actor.name}の「牽制射撃」→ ${enemy.name}に${totalDmg}ダメージ（${totalHits}Hit分合算）`;
   if (stacksAdded > 0) {
     logMsg += `、ATKが${stacksAdded * 5}%低下`;
   }
@@ -416,22 +414,23 @@ const s1d2: SkillHandler = (state, actorTeam) => {
   }
 
   let s = state;
-  let totalDmg = 0;
   let dotsAdded = 0;
 
-  for (let i = 0; i < 1 + reuseCount; i++) {
-    const currentActor = getActive(s, actorTeam);
-    const currentEnemy = getActive(s, actorTeam === 'team1' ? 'team2' : 'team1');
-    const hitDmg = calcDamage(currentActor, currentEnemy, { multiplier });
-    totalDmg += hitDmg;
-    s = dealDamage(s, actorTeam, hitDmg);
+  const totalHits = 1 + reuseCount;
+  const finalMultiplier = multiplier * totalHits;
 
-    if (suppression > 0) {
-      const updatedEnemy = getActive(s, actorTeam === 'team1' ? 'team2' : 'team1');
+  const currentActor = getActive(s, actorTeam);
+  const currentEnemy = getActive(s, actorTeam === 'team1' ? 'team2' : 'team1');
+  const totalDmg = calcDamage(currentActor, currentEnemy, { multiplier: finalMultiplier });
+  s = dealDamage(s, actorTeam, totalDmg);
+
+  if (suppression > 0) {
+    const enemyTeam = actorTeam === 'team1' ? 'team2' : 'team1';
+    for (let i = 0; i < totalHits; i++) {
+      const updatedEnemy = getActive(s, enemyTeam);
       const currentStacks = updatedEnemy.effects.find((e) => e.id === 'epp_d2_dot')?.currentStacks ?? 0;
       const maxStacks = 3;
       if (currentStacks < maxStacks) {
-        const enemyTeam = actorTeam === 'team1' ? 'team2' : 'team1';
         s = updateChar(s, enemyTeam, updatedEnemy.id, (c) =>
           applyEffect(c, {
             id: 'epp_d2_dot',
@@ -450,7 +449,7 @@ const s1d2: SkillHandler = (state, actorTeam) => {
     }
   }
 
-  let logMsg = `${actor.name}の「制圧射撃」→ ${enemy.name}に${totalDmg}ダメージ（${1 + reuseCount}Hit）`;
+  let logMsg = `${actor.name}の「制圧射撃」→ ${enemy.name}に${totalDmg}ダメージ（${totalHits}Hit分合算）`;
   if (dotsAdded > 0) {
     logMsg += `、DoTを付与（+${dotsAdded}スタック）`;
   }
