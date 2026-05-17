@@ -610,24 +610,39 @@ function discardAndDraw(char: CharacterState, color: number): CharacterState {
   const cards = [...((char.battleFlags['hand_cards'] as Card[]) ?? [])];
 
   if (cards.length > 0) {
-    const colorMap: Record<number, number> = {};
-    for (const c of cards) {
-      colorMap[c.color] = (colorMap[c.color] ?? 0) + 1;
-    }
-    const doubledColorStr = Object.keys(colorMap).find(k => colorMap[Number(k)] === 2);
     let discardIndex = -1;
+    const nonJokerIndices = cards
+      .map((c, i) => (c.isJoker ? -1 : i))
+      .filter((i) => i !== -1);
 
-    if (doubledColorStr !== undefined) {
-      const doubledColor = Number(doubledColorStr);
-      discardIndex = cards.findIndex(c => c.color !== doubledColor);
-    }
+    if (nonJokerIndices.length === 0) {
+      discardIndex = 0;
+    } else {
+      const nonJokerCards = nonJokerIndices.map((i) => cards[i]);
+      const colorMap: Record<number, number> = {};
+      for (const c of nonJokerCards) {
+        colorMap[c.color] = (colorMap[c.color] ?? 0) + 1;
+      }
+      const doubledColorStr = Object.keys(colorMap).find(k => colorMap[Number(k)] === 2);
+      if (doubledColorStr !== undefined) {
+        const doubledColor = Number(doubledColorStr);
+        const njIdx = nonJokerCards.findIndex(c => c.color !== doubledColor);
+        if (njIdx !== -1) {
+          discardIndex = nonJokerIndices[njIdx];
+        }
+      }
 
-    if (discardIndex === -1) {
-      let minNum = 999;
-      for (let i = 0; i < cards.length; i++) {
-        if (cards[i].num < minNum) {
-          minNum = cards[i].num;
-          discardIndex = i;
+      if (discardIndex === -1) {
+        let minNum = 999;
+        let selectedNjIdx = -1;
+        for (let i = 0; i < nonJokerCards.length; i++) {
+          if (nonJokerCards[i].num < minNum) {
+            minNum = nonJokerCards[i].num;
+            selectedNjIdx = i;
+          }
+        }
+        if (selectedNjIdx !== -1) {
+          discardIndex = nonJokerIndices[selectedNjIdx];
         }
       }
     }
@@ -882,7 +897,6 @@ const deal_passive_turn_start: PassiveHandler = (state, ownerTeam, ownerCharId) 
   s = addLog(s, `${char.name}の「ターン開始時ドロー」発動 → 手札: ${newChar.customResources.find(r => r.id === 'hand_cards')?.display_value}`);
   return s;
 };
-
 /** on_turn_end: ショウダウン */
 const deal_passive_showdown: PassiveHandler = (state, ownerTeam, ownerCharId) => {
   const char = state[ownerTeam].characters.find((c) => c.id === ownerCharId);
@@ -899,7 +913,32 @@ const deal_passive_showdown: PassiveHandler = (state, ownerTeam, ownerCharId) =>
   return s;
 };
 
+/** passive_always: ドロー使用制限の監視 */
+const deal_passive_always: PassiveHandler = (state, ownerTeam, ownerCharId) => {
+  return updateChar(state, ownerTeam, ownerCharId, (c) => {
+    const redraw = getResource(c, 'redraw_count');
+    const hasDrawDisabled = c.disabledSkills.includes('char_deal_s1_draw');
+    if (redraw <= 0) {
+      if (!hasDrawDisabled) {
+        return {
+          ...c,
+          disabledSkills: [...c.disabledSkills, 'char_deal_s1_draw']
+        };
+      }
+    } else {
+      if (hasDrawDisabled) {
+        return {
+          ...c,
+          disabledSkills: c.disabledSkills.filter(id => id !== 'char_deal_s1_draw')
+        };
+      }
+    }
+    return c;
+  });
+};
+
 export const char_deal_passive_handlers: Record<string, PassiveHandler> = {
   char_deal_passive_turn_start_on_turn_start: deal_passive_turn_start,
   char_deal_passive_showdown_on_turn_end: deal_passive_showdown,
+  char_deal_passive_always_passive_always: deal_passive_always,
 };
