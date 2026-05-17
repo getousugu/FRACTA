@@ -117,12 +117,12 @@ const s1: SkillHandler = (state, actorTeam) => {
 
   let s = updateActiveChar(state, actorTeam, (c) => {
     let nc = setResource(c, targetResource, 1);
-    // ターン終了時に減少するフラグを設定
+    const prevCount = (nc.battleFlags.platoon_decrease_count as number) || 0;
     nc = {
       ...nc,
       battleFlags: {
         ...nc.battleFlags,
-        platoon_decrease_on_turn_end: true,
+        platoon_decrease_count: prevCount + 1,
       },
     };
     return nc;
@@ -187,9 +187,7 @@ const s3: SkillHandler = (state, actorTeam) => {
     s = dealDamage(s, actorTeam, hitDmg);
 
     if (suppression > 0) {
-      const updatedActor = getActive(s, actorTeam);
-      const isFirstTrigger = (updatedActor.battleFlags['s3_first_trigger'] as boolean) ?? true;
-      if (isFirstTrigger) {
+      if (i === 0) {
         const enemyTeam = actorTeam === 'team1' ? 'team2' : 'team1';
         s = updateChar(s, enemyTeam, currentEnemy.id, (c) =>
           applyEffect(c, {
@@ -203,10 +201,6 @@ const s3: SkillHandler = (state, actorTeam) => {
             turnsRemaining: 2,
           })
         );
-        s = updateActiveChar(s, actorTeam, (c) => ({
-          ...c,
-          battleFlags: { ...c.battleFlags, s3_first_trigger: false },
-        }));
         defDownApplied = true;
       }
     }
@@ -489,34 +483,43 @@ const passive_proliferation: PassiveHandler = (state, ownerTeam, ownerCharId) =>
 
   // 突撃小隊を1以上保持しているなら突撃小隊を設定、そうでなければ制圧小隊を設定
   const targetResource = assault > 0 ? 'assault_platoon' : 'suppression_platoon';
-  const currentPlatoon = getResource(char, targetResource);
   const newPlatoon = Math.min(10, targetPlatoon);
 
-  if (currentPlatoon === newPlatoon) return state;
-
-  let s = updateChar(state, ownerTeam, ownerCharId, (c) => setResource(c, targetResource, newPlatoon, true));
-
-  // 塹壕構築の追加効果
   const hasExtraPlatoon = (char.battleFlags['s6_extra_platoon'] as boolean) ?? false;
+
+  let s = state;
+  let finalPlatoon = newPlatoon;
+
   if (hasExtraPlatoon) {
-    const extraGain = Math.min(10, newPlatoon + 3) - newPlatoon;
-    if (extraGain > 0) {
-      s = updateChar(s, ownerTeam, ownerCharId, (c) => {
-        let nc = setResource(c, targetResource, newPlatoon + extraGain, true);
-        nc = {
-          ...nc,
-          battleFlags: {
-            ...nc.battleFlags,
-            s6_extra_platoon: false,
-          },
-        };
-        return nc;
-      });
-      s = addLog(s, `${char.name}の「塹壕構築」効果 → 小隊+3追加`);
-    }
+    finalPlatoon = Math.min(10, newPlatoon + 3);
   }
 
-  s = addLog(s, `${char.name}の「永続増殖」発動 → ${targetResource === 'assault_platoon' ? '突撃小隊' : '制圧小隊'}を${newPlatoon}に設定`);
+  const currentPlatoon = getResource(char, targetResource);
+  
+  if (currentPlatoon === finalPlatoon && !hasExtraPlatoon) {
+    return state;
+  }
+
+  s = updateChar(s, ownerTeam, ownerCharId, (c) => {
+    let nc = setResource(c, targetResource, finalPlatoon, true);
+    if (hasExtraPlatoon) {
+      nc = {
+        ...nc,
+        battleFlags: {
+          ...nc.battleFlags,
+          s6_extra_platoon: false,
+        },
+      };
+    }
+    return nc;
+  });
+
+  if (hasExtraPlatoon) {
+    s = addLog(s, `${char.name}の「永続増殖」発動 → ${targetResource === 'assault_platoon' ? '突撃小隊' : '制圧小隊'}を${finalPlatoon}に設定（塹壕構築による+3適用）`);
+  } else if (currentPlatoon !== newPlatoon) {
+    s = addLog(s, `${char.name}の「永続増殖」発動 → ${targetResource === 'assault_platoon' ? '突撃小隊' : '制圧小隊'}を${finalPlatoon}に設定`);
+  }
+
   return s;
 };
 
@@ -593,8 +596,8 @@ const passive_turn_end_decrease: PassiveHandler = (state, ownerTeam, ownerCharId
   const char = state[ownerTeam].characters.find((c) => c.id === ownerCharId);
   if (!char || !char.isActive) return state;
 
-  const shouldDecrease = (char.battleFlags['platoon_decrease_on_turn_end'] as boolean) ?? false;
-  if (!shouldDecrease) return state;
+  const decreaseCount = (char.battleFlags['platoon_decrease_count'] as number) ?? 0;
+  if (decreaseCount <= 0) return state;
 
   const suppression = getResource(char, 'suppression_platoon');
   const assault = getResource(char, 'assault_platoon');
@@ -603,24 +606,24 @@ const passive_turn_end_decrease: PassiveHandler = (state, ownerTeam, ownerCharId
 
   if (assault > 0) {
     s = updateChar(s, ownerTeam, ownerCharId, (c) => {
-      let nc = setResource(c, 'assault_platoon', -1);
+      let nc = setResource(c, 'assault_platoon', -decreaseCount);
       nc = {
         ...nc,
         battleFlags: {
           ...nc.battleFlags,
-          platoon_decrease_on_turn_end: false,
+          platoon_decrease_count: 0,
         },
       };
       return nc;
     });
   } else if (suppression > 0) {
     s = updateChar(s, ownerTeam, ownerCharId, (c) => {
-      let nc = setResource(c, 'suppression_platoon', -1);
+      let nc = setResource(c, 'suppression_platoon', -decreaseCount);
       nc = {
         ...nc,
         battleFlags: {
           ...nc.battleFlags,
-          platoon_decrease_on_turn_end: false,
+          platoon_decrease_count: 0,
         },
       };
       return nc;
