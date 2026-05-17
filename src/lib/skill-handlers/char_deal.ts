@@ -313,7 +313,7 @@ function applyRoleEffects(
             mode: 'mul',
             isStackable: false,
             turnsRemaining: 1,
-            currentStacks: 1
+
           })
         );
         s = updateActiveChar(s, enemyTeam, (c) =>
@@ -326,7 +326,7 @@ function applyRoleEffects(
             mode: 'mul',
             isStackable: false,
             turnsRemaining: 1,
-            currentStacks: 1
+
           })
         );
         s = addLog(s, `ワンペア青の効果 → ${enemy.name}のATK・DEF5%低下（1ターン）`);
@@ -348,7 +348,7 @@ function applyRoleEffects(
             mode: 'mul',
             isStackable: false,
             turnsRemaining: 2,
-            currentStacks: 1
+
           })
         );
         s = updateActiveChar(s, actorTeam, (c) =>
@@ -361,7 +361,7 @@ function applyRoleEffects(
             mode: 'mul',
             isStackable: false,
             turnsRemaining: 2,
-            currentStacks: 1
+
           })
         );
         totalHeal += Math.floor(actor.maxHp * 0.10);
@@ -386,7 +386,7 @@ function applyRoleEffects(
             mode: 'mul',
             isStackable: false,
             turnsRemaining: 2,
-            currentStacks: 1
+
           })
         );
         s = updateActiveChar(s, enemyTeam, (c) =>
@@ -399,7 +399,7 @@ function applyRoleEffects(
             mode: 'mul',
             isStackable: false,
             turnsRemaining: 2,
-            currentStacks: 1
+
           })
         );
         s = addLog(s, `フラッシュ青の効果 → ${enemy.name}のATK・DEF10%低下（2ターン）`);
@@ -632,8 +632,7 @@ const deal_s4_bluff: SkillHandler = (state, actorTeam) => {
       value: 0.05,
       mode: 'mul',
       isStackable: false,
-      turnsRemaining: 2,
-      currentStacks: 1
+      turnsRemaining: 2
     })
   );
 

@@ -556,7 +556,7 @@ const passive_combo: PassiveHandler = (state, ownerTeam, ownerCharId) => {
         value: stacks * 0.1,
         mode: 'mul',
         isStackable: false,
-        turnsRemaining: 0, // このターンのみ
+        turnsRemaining: 1, // このターンのみ（0は永続化バグになる）
       })
     );
   }

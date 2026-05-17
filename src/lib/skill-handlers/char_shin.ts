@@ -235,7 +235,7 @@ const passive_buff: PassiveHandler = (state, ownerTeam, ownerCharId) => {
               mode: 'mul',
               isStackable: false,
               currentStacks: 1,
-              turnsRemaining: 1, // evaluateAlwaysPassivesで毎ターン更新される想定
+              turnsRemaining: -1, // evaluateAlwaysPassivesで毎ターン更新される想定
             }
           ]
         };

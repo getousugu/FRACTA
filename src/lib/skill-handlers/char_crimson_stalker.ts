@@ -350,6 +350,13 @@ const passive_frenzy_trigger: PassiveHandler = (state, ownerTeam, ownerCharId) =
   
   if (targetEnemy && targetEnemy.isAlive) return state; // まだ生きている
   
+  // 他の味方によって撃破されたか？
+  // 自分の攻撃で倒した場合は発動しない
+  const activeChar = getActive(state, ownerTeam);
+  if (state.currentTurn === ownerTeam && activeChar.id === ownerCharId) {
+    return state; // 自分が倒した
+  }
+  
   // 宿敵が死亡したので狂乱発動
   let s = state;
   
