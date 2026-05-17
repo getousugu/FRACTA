@@ -30,15 +30,6 @@ const GLOSSARY: Record<string, string> = {
 // マウスホバーで説明を表示するツールチップラッパー
 function TooltipWrapper({ keyword, description, children }: { keyword: string, description: string, children: React.ReactNode }) {
   const [visible, setVisible] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-
-  function handleMouseMove(e: React.MouseEvent) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setPosition({
-      x: rect.left + window.scrollX + rect.width / 2,
-      y: rect.top + window.scrollY - 10
-    });
-  }
 
   return (
     <span
@@ -51,24 +42,23 @@ function TooltipWrapper({ keyword, description, children }: { keyword: string, d
       }}
       onMouseEnter={() => setVisible(true)}
       onMouseLeave={() => setVisible(false)}
-      onMouseMove={handleMouseMove}
     >
       {children}
       {visible && (
         <span
           className="tooltip-content"
           style={{
-            position: 'fixed',
-            left: `${position.x}px`,
-            top: `${position.y}px`,
-            transform: 'translate(-50%, -100%)',
+            position: 'absolute',
+            left: '50%',
+            top: 'calc(100% + 8px)',
+            transform: 'translateX(-50%)',
             background: '#151b30',
             border: '1px solid var(--border-bright)',
             borderRadius: '8px',
             padding: '8px 12px',
             fontSize: '11px',
             color: 'var(--text-primary)',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
             zIndex: 9999,
             pointerEvents: 'none',
             whiteSpace: 'normal',
