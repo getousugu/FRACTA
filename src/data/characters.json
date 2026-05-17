@@ -1012,7 +1012,7 @@
         "id": "char_priest_s4_incomplete",
         "name": "不完全",
         "cost": 1,
-        "description": "神のパッシブを無効化し、神父の状態に戻る。HPは最大値の50%となる。このスキル発動後、神のパッシブによる復活効果は無効化され、ターン終了。",
+        "description": "神のパッシブを無効化し、神父の状態に戻る（ただし加護？と神殺しは無効のまま）。HPは最大値の40%となる。このスキル発動後、神のパッシブによる復活効果は無効化され、ターン終了。",
         "unlocked_by": "char_priest_passive_god",
         "available": "permanent"
       }
