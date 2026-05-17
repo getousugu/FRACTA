@@ -185,15 +185,16 @@ const s3_god: SkillHandler = (state, actorTeam) => {
   const actor = getActive(state, actorTeam);
 
   
-  const sin = getResource(actor, 'sin');
-  let s = dealDamage(state, actorTeam, sin);
-  s = addLog(s, `${actor.name}の「還元」→ 罪を全て解き放ち、${sin}ダメージ`);
+  const currentSin = getResource(actor, 'sin');
+  const consumedSin = Math.min(currentSin, 600);
+  let s = dealDamage(state, actorTeam, consumedSin);
+  s = addLog(s, `${actor.name}の「還元」→ 罪を最大600まで解き放ち、${consumedSin}ダメージ`);
   
-  // 罪をリセット
-  s = updateActiveChar(s, actorTeam, (c) => setResource(c, 'sin', 0, true));
+  // 罪を消費
+  s = updateActiveChar(s, actorTeam, (c) => setResource(c, 'sin', currentSin - consumedSin, true));
   
-  if (sin <= 400) {
-    const extraDmg = Math.floor(sin * 0.3);
+  if (consumedSin <= 400) {
+    const extraDmg = Math.floor(consumedSin * 0.3);
     s = dealDamage(s, actorTeam, extraDmg);
     s = addLog(s, `さらに追撃で${extraDmg}ダメージ`);
   }

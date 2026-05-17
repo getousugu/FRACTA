@@ -1004,7 +1004,7 @@
         "id": "char_priest_s3_reduction",
         "name": "還元",
         "cost": 2,
-        "description": "罪を全て消耗し、消耗した数値だけダメージ。与えたダメージが400以下なら、与えたダメージの30%を再度与える。",
+        "description": "罪を最大600まで消費し、消費した数値だけダメージ。与えたダメージが400以下なら、与えたダメージの30%を再度与える。",
         "unlocked_by": "char_priest_passive_god",
         "available": "permanent"
       },
