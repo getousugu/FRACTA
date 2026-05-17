@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { StatusEffect } from '../types';
 
 type Props = {
@@ -123,14 +124,23 @@ export function StatusEffects({ effects }: Props) {
         );
       })}
 
-      {tooltip && (
+      {tooltip && createPortal(
         <div
           ref={tooltipRef}
           className="tooltip"
-          style={{ position: 'fixed', top: tooltip.y, left: tooltip.x }}
+          style={{
+            position: 'fixed',
+            top: tooltip.y,
+            left: tooltip.x,
+            zIndex: 9999,
+            whiteSpace: 'normal',
+            width: '200px',
+            textAlign: 'left'
+          }}
         >
           {tooltip.text}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
