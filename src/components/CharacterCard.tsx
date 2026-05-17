@@ -84,7 +84,19 @@ export function CharacterCard({
         ))}
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
           <span style={{ fontSize: 18 }}>{emoji}</span>
-          <span style={{ fontWeight: 600, fontSize: 13, flex: 1 }}>{char.name}</span>
+          <span
+            style={{
+              fontWeight: 600,
+              fontSize: 12,
+              flex: 1,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+            title={char.name}
+          >
+            {char.name}
+          </span>
           {isActive && (
             <span
               style={{
@@ -93,6 +105,7 @@ export function CharacterCard({
                 borderRadius: 3,
                 background: 'var(--accent-red)',
                 color: '#fff',
+                whiteSpace: 'nowrap',
               }}
             >
               出場
@@ -112,6 +125,7 @@ export function CharacterCard({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                flexShrink: 0,
               }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -123,6 +137,28 @@ export function CharacterCard({
           )}
         </div>
         <HPBar char={char} compact />
+        {char.isAlive && char.customResources.length > 0 && (
+          <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {char.customResources.map((r) => {
+              const labelColor = r.id === 'death_sentence'
+                ? 'var(--accent-red-bright)'
+                : r.id === 'tenacity'
+                ? 'var(--accent-gold-bright)'
+                : 'var(--accent-gold)';
+              return (
+                <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, lineHeight: 1.2 }}>
+                  <span style={{ color: 'var(--text-muted)' }}>{r.name}</span>
+                  <span style={{ fontWeight: 700, color: labelColor }}>{r.value}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {char.isAlive && char.effects.length > 0 && (
+          <div style={{ marginTop: 6 }}>
+            <StatusEffects effects={char.effects} />
+          </div>
+        )}
         {!char.isAlive && (
           <div style={{ fontSize: 11, color: 'var(--accent-red)', marginTop: 4, textAlign: 'center' }}>
             戦闘不能
